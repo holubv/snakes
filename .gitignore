@@ -1,0 +1,16 @@
+*.class
+*.log
+hs_err_pid*
+
+/.idea/
+
+out/
+
+.idea_modules/
+
+target/
+
+release.properties
+
+# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
+!/.mvn/wrapper/maven-wrapper.jar
