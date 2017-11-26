@@ -25,7 +25,6 @@
     </dependencies>
 
     <build>
-        <finalName>Snakes</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -38,15 +37,21 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
+                    <finalName>snakes</finalName>
                     <archive>
                         <manifest>
                             <mainClass>com.gmail.holubvojtech.snakes.Bootstrap</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
+                    <!--<descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <appendAssemblyId>false</appendAssemblyId>
+                    </descriptorRefs>-->
+                    <descriptors>
+                        <descriptor>assembly-jar.xml</descriptor>
+                        <descriptor>assembly-windows.xml</descriptor>
+                        <descriptor>assembly-linux.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -58,7 +63,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>
+            <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
                 <executions>
@@ -70,15 +75,15 @@
                         </goals>
                         <configuration>
                             <headerType>gui</headerType>
-                            &lt;!&ndash;<headerType>jniGui32</headerType>&ndash;&gt;
                             <chdir>.</chdir>
-                            <outfile>${build.directory}/${program.exeName}</outfile>
-                            <icon>${basedir}/src/main/resources/favicon.ico</icon>
-                            <jar>${build.directory}/${build.finalName}.jar</jar>
-                            <errTitle>iup</errTitle>
+                            <outfile>${build.directory}/snakes.exe</outfile>
+                            <!--<icon>${basedir}/src/main/resources/favicon.ico</icon>-->
+                            <!--<jar>${build.directory}/snakes-jar.jar</jar>-->
+                            <jar>snakes-jar.jar</jar> <!-- needs to be relative to exe file -->
+                            <dontWrapJar>true</dontWrapJar>
+                            <errTitle>Snakes</errTitle>
                             <classPath>
-                                <mainClass>${program.main}</mainClass>
-                                <addDependencies>true</addDependencies>
+                                <mainClass>com.gmail.holubvojtech.snakes.Bootstrap</mainClass>
                             </classPath>
                             <jre>
                                 <runtimeBits>64/32</runtimeBits>
@@ -90,23 +95,23 @@
                                 </opts>
                             </jre>
                             <singleInstance>
-                                <mutexName>iup-1-0-mutex</mutexName>
+                                <mutexName>snakes-1-0-mutex</mutexName>
                             </singleInstance>
                             <versionInfo>
                                 <fileVersion>1.0.0.0</fileVersion>
                                 <txtFileVersion>1.0</txtFileVersion>
-                                <fileDescription>iup by holubv</fileDescription>
+                                <fileDescription>Snakes by holubv</fileDescription>
                                 <copyright>(C) 2017 Vojtech Holub</copyright>
                                 <productVersion>1.0.0.0</productVersion>
                                 <txtProductVersion>1.0</txtProductVersion>
-                                <productName>iup</productName>
-                                <internalName>iup</internalName>
-                                <originalFilename>${program.exeName}</originalFilename>
+                                <productName>Snakes</productName>
+                                <internalName>Snakes</internalName>
+                                <originalFilename>snakes.exe</originalFilename>
                             </versionInfo>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 
