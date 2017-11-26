@@ -1,5 +1,8 @@
 package com.gmail.holubvojtech.snakes;
 
+import com.gmail.holubvojtech.snakes.client.Snakes;
+import org.newdawn.slick.AppGameContainer;
+
 import java.io.File;
 
 public class Bootstrap {
@@ -15,8 +18,8 @@ public class Bootstrap {
             System.setProperty("java.library.path", natives);
         }
 
-        System.out.println("Hello, world!");
-
+        AppGameContainer container = new AppGameContainer(new Snakes());
+        container.start();
     }
 
 }
