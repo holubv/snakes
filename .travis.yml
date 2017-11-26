@@ -1,0 +1,13 @@
+language: java
+jdk:
+  - oraclejdk8
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "uSC5TpBSrdTs/AScm2syqSTHBVDei2bJuuoW9zEefRPJV8W0Eqf9cMt3dbR7mVlGeXjlShSCc4ugzFzgc4ciTDxbhmosHdEzAj1ip+11SglNQ/24lWStW3/OuKY9kPI7LunRzRRl9orV81IYEd62kkonUejZ3mf2fl2dQjc/6jGa0mYKCPbujoEyRKC520f3ZJvMBwAO/NMMewxsGX8bhPkab/sB852QJJpBuLSjP/FrIa/YWHSIpggjiW0ZiC0R5SEpAVScPmDdi29TyOdbUfa8AoFs1DgILzRQJGYTMOpgWYVs/X/2e6VXzwyQEFdf2abaqaRFjz44/EGzIWoJulqIRrI/uElHcdG6sUWiOLs6EeAL7VhhNP7iFbxEny0rN+bdv+To/qhep52ACTVi404Q9iXFbtU5g2cryibn04WRmv/alLJOpRjV1phMq/jIF3cVv22TRu0zGoKLcnC6X5tQ9xrzbGZgr08NRzUNQA+18yDhWul6yWt3jyBFICBhpf5v2urfI+jocBhwl9x42ONjOFkyuGYhZlQXxukq4CWY7NyNCsmrtFXVA/J6XbjWjIXPSwNERNNwUYAp0ouIYTTIA04TLHJAn6tXEDfb8TKXe8H6DqghonOsOV/oU+q4xqwJtDjegBixSpNklWBJSk+wCSW/zxu+X6Ng2ABu15s="
+  file: "/bootstrap/target/Snakes.jar"
+  skip_cleanup: true
+  on:
+    repo: holubv/snakes
+    tags: true

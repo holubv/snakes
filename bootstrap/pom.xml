@@ -14,9 +14,100 @@
     <dependencies>
         <dependency>
             <groupId>com.gmail.holubvojtech.snakes</groupId>
-            <artifactId>snakes-core</artifactId>
+            <artifactId>snakes-client</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.gmail.holubvojtech.snakes</groupId>
+            <artifactId>snakes-server</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <finalName>Snakes</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.gmail.holubvojtech.snakes.Bootstrap</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--<plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>l4j-gui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            &lt;!&ndash;<headerType>jniGui32</headerType>&ndash;&gt;
+                            <chdir>.</chdir>
+                            <outfile>${build.directory}/${program.exeName}</outfile>
+                            <icon>${basedir}/src/main/resources/favicon.ico</icon>
+                            <jar>${build.directory}/${build.finalName}.jar</jar>
+                            <errTitle>iup</errTitle>
+                            <classPath>
+                                <mainClass>${program.main}</mainClass>
+                                <addDependencies>true</addDependencies>
+                            </classPath>
+                            <jre>
+                                <runtimeBits>64/32</runtimeBits>
+                                <minVersion>1.8.0</minVersion>
+                                <initialHeapSize>16</initialHeapSize>
+                                <maxHeapSize>64</maxHeapSize>
+                                <opts>
+                                    <opt>-XX:+UseSerialGC</opt>
+                                </opts>
+                            </jre>
+                            <singleInstance>
+                                <mutexName>iup-1-0-mutex</mutexName>
+                            </singleInstance>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>1.0</txtFileVersion>
+                                <fileDescription>iup by holubv</fileDescription>
+                                <copyright>(C) 2017 Vojtech Holub</copyright>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>1.0</txtProductVersion>
+                                <productName>iup</productName>
+                                <internalName>iup</internalName>
+                                <originalFilename>${program.exeName}</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
+        </plugins>
+    </build>
 
 </project>
