@@ -11,7 +11,3 @@ deploy:
   on:
     repo: holubv/snakes
     tags: true
-
-branches:
-  only:
-    - "master"
