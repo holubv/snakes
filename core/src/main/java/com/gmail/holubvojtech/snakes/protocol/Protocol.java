@@ -1,6 +1,6 @@
 package com.gmail.holubvojtech.snakes.protocol;
 
-import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
+import com.gmail.holubvojtech.snakes.protocol.packet.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,12 +10,21 @@ public enum Protocol {
     SERVER_BOUND {
         {
             registerPacket(0x00, Handshake.class);
+            registerPacket(0x01, Login.class);
+            registerPacket(0x02, RespawnRequest.class);
+            registerPacket(0x03, Chat.class);
         }
     },
 
     CLIENT_BOUND {
         {
+            registerPacket(0x00, ServerStatus.class);
+            registerPacket(0x01, Disconnect.class);
+            registerPacket(0x02, LoginSuccess.class);
+            registerPacket(0x03, PlayerJoin.class);
+            registerPacket(0x04, PlayerLeave.class);
 
+            registerPacket(0x09, ChatMessage.class);
         }
     };
 
