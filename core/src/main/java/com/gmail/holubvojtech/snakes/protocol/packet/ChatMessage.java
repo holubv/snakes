@@ -4,25 +4,33 @@ import com.gmail.holubvojtech.snakes.protocol.AbstractPacketHandler;
 import com.gmail.holubvojtech.snakes.protocol.DefinedPacket;
 import io.netty.buffer.ByteBuf;
 
-@Serverbound
-public class Chat extends DefinedPacket {
+@Clientbound
+public class ChatMessage extends DefinedPacket {
 
+    private int senderId;
     private String message;
 
-    public Chat() {
+    public ChatMessage() {
     }
 
-    public Chat(String message) {
+    public ChatMessage(String message) {
+        this.message = message;
+    }
+
+    public ChatMessage(int senderId, String message) {
+        this.senderId = senderId;
         this.message = message;
     }
 
     @Override
     public void read(ByteBuf buf) {
+        senderId = buf.readUnsignedShort();
         message = readString(buf);
     }
 
     @Override
     public void write(ByteBuf buf) {
+        buf.writeShort(senderId);
         writeString(message, buf);
     }
 
@@ -33,9 +41,14 @@ public class Chat extends DefinedPacket {
 
     @Override
     public String toString() {
-        return "Chat{" +
-                "message='" + message + '\'' +
+        return "ChatMessage{" +
+                "senderId=" + senderId +
+                ", message='" + message + '\'' +
                 '}';
+    }
+
+    public int getSenderId() {
+        return senderId;
     }
 
     public String getMessage() {

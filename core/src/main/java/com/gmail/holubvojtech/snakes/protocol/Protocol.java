@@ -19,6 +19,8 @@ public enum Protocol {
         }
     };
 
+    public static final byte VERSION = 1;
+
     private Map<Class<? extends DefinedPacket>, Integer> packetMap = new HashMap<>(255);
     private Class[] packetClasses = new Class[255];
 

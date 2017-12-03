@@ -2,6 +2,7 @@ package com.gmail.holubvojtech.snakes.protocol.packet;
 
 import com.gmail.holubvojtech.snakes.protocol.AbstractPacketHandler;
 import com.gmail.holubvojtech.snakes.protocol.DefinedPacket;
+import com.gmail.holubvojtech.snakes.protocol.Protocol;
 import io.netty.buffer.ByteBuf;
 
 @Serverbound
@@ -11,6 +12,11 @@ public class Handshake extends DefinedPacket {
     private boolean login;
 
     public Handshake() {
+    }
+
+    public Handshake(boolean login) {
+        this.protocolVersion = Protocol.VERSION;
+        this.login = login;
     }
 
     public Handshake(int protocolVersion, boolean login) {

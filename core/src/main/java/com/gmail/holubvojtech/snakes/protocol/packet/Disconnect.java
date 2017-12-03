@@ -4,26 +4,26 @@ import com.gmail.holubvojtech.snakes.protocol.AbstractPacketHandler;
 import com.gmail.holubvojtech.snakes.protocol.DefinedPacket;
 import io.netty.buffer.ByteBuf;
 
-@Serverbound
-public class Chat extends DefinedPacket {
+@Clientbound
+public class Disconnect extends DefinedPacket {
 
-    private String message;
+    private String reason = "";
 
-    public Chat() {
+    public Disconnect() {
     }
 
-    public Chat(String message) {
-        this.message = message;
+    public Disconnect(String reason) {
+        this.reason = reason;
     }
 
     @Override
     public void read(ByteBuf buf) {
-        message = readString(buf);
+        reason = readString(buf);
     }
 
     @Override
     public void write(ByteBuf buf) {
-        writeString(message, buf);
+        writeString(reason, buf);
     }
 
     @Override
@@ -33,12 +33,12 @@ public class Chat extends DefinedPacket {
 
     @Override
     public String toString() {
-        return "Chat{" +
-                "message='" + message + '\'' +
+        return "Disconnect{" +
+                "reason='" + reason + '\'' +
                 '}';
     }
 
-    public String getMessage() {
-        return message;
+    public String getReason() {
+        return reason;
     }
 }

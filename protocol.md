@@ -102,7 +102,7 @@ Relative coords (relative to the head or previous tail)
 |----|----|----|
 | Entity id | short | |
 
-**[C 0x09] Chat**
+**[C 0x09] ChatMessage**
 
 | name | field type | description |
 |----|----|----|

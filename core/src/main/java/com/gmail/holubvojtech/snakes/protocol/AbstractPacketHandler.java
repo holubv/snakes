@@ -1,11 +1,12 @@
 package com.gmail.holubvojtech.snakes.protocol;
 
-import com.gmail.holubvojtech.snakes.protocol.packet.Chat;
-import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
-import com.gmail.holubvojtech.snakes.protocol.packet.Login;
-import com.gmail.holubvojtech.snakes.protocol.packet.RespawnRequest;
+import com.gmail.holubvojtech.snakes.protocol.packet.*;
 
 public class AbstractPacketHandler {
+
+    /*
+        Server bound
+     */
 
     public void handle(Handshake handshake) throws Exception {
     }
@@ -17,5 +18,27 @@ public class AbstractPacketHandler {
     }
 
     public void handle(Chat chat) throws Exception {
+    }
+
+    /*
+        Client bound
+     */
+
+    public void handle(ServerStatus serverStatus) throws Exception {
+    }
+
+    public void handle(Disconnect disconnect) throws Exception {
+    }
+
+    public void handle(LoginSuccess loginSuccess) throws Exception {
+    }
+
+    public void handle(ChatMessage chatMessage) throws Exception {
+    }
+
+    public void handle(PlayerLeave playerLeave) throws Exception {
+    }
+
+    public void handle(PlayerJoin playerJoin) throws Exception {
     }
 }
