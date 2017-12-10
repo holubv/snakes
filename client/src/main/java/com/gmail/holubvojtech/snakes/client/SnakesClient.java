@@ -11,10 +11,11 @@ import io.netty.channel.*;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class SnakesClient extends PacketHandler implements Connection {
 
-    private volatile boolean running = false;
+    private boolean running = false;
     private InetSocketAddress address;
     private Channel channel;
     private EventLoopGroup eventLoops;
@@ -41,7 +42,7 @@ public class SnakesClient extends PacketHandler implements Connection {
         running = true;
     }
 
-    public void connect() {
+    public void connect(Consumer<Throwable> callback) {
 
         if (!running) {
             throw new IllegalStateException("Client is not running");
@@ -72,9 +73,11 @@ public class SnakesClient extends PacketHandler implements Connection {
                 .addListener((ChannelFutureListener) future -> {
                     if (future.isSuccess()) {
                         channel = future.channel();
+                        callback.accept(null);
                     } else {
                         future.channel().close();
                         future.cause().printStackTrace();
+                        callback.accept(future.cause());
                     }
                 });
     }
@@ -113,11 +116,8 @@ public class SnakesClient extends PacketHandler implements Connection {
 
     @Override
     public void disconnect() {
-
         if (!ch.isClosed()) {
-
-            //todo callback
-            this.ch.getHandle().eventLoop().schedule(() -> ch.close(), 20L, TimeUnit.MILLISECONDS);
+            this.ch.getHandle().eventLoop().schedule(() -> ch.close(), 1L, TimeUnit.MILLISECONDS);
         }
     }
 
