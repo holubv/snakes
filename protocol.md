@@ -76,7 +76,7 @@ Relative coords (relative to the head or previous tail)
 
 | name | field type | description |
 |----|----|----|
-| Entity id | short | |
+| Entity id | int | |
 | Entity type | byte | 0 = snake |
 | X | signed short | |
 | Y | signed short | |

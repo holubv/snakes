@@ -6,21 +6,21 @@ import org.newdawn.slick.GameContainer;
 
 import java.util.function.Consumer;
 
-public class InfoMenu extends Panel {
+public class InfoPanel extends Panel {
 
-    public InfoMenu(GameContainer container, String text) {
+    public InfoPanel(GameContainer container, String text) {
         this(container, text, null);
     }
 
-    public InfoMenu(GameContainer container, String text, Consumer<Button> okBtn) {
+    public InfoPanel(GameContainer container, String text, Consumer<Button> okBtn) {
         this(container, new String[]{text}, okBtn);
     }
 
-    public InfoMenu(GameContainer container, Throwable throwable, Consumer<Button> okBtn) {
+    public InfoPanel(GameContainer container, Throwable throwable, Consumer<Button> okBtn) {
         this(container, new String[]{throwable.getClass().getSimpleName() + ":", throwable.getMessage()}, okBtn);
     }
 
-    public InfoMenu(GameContainer container, String[] text, Consumer<Button> okBtn) {
+    public InfoPanel(GameContainer container, String[] text, Consumer<Button> okBtn) {
         super(0, 0, container.getWidth(), container.getHeight());
         setBackground(Color.white);
 

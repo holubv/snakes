@@ -1,7 +1,9 @@
 package com.gmail.holubvojtech.snakes.client;
 
-import com.gmail.holubvojtech.snakes.Utils;
-import com.gmail.holubvojtech.snakes.netty.*;
+import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
+import com.gmail.holubvojtech.snakes.netty.Connection;
+import com.gmail.holubvojtech.snakes.netty.HandlerBoss;
+import com.gmail.holubvojtech.snakes.netty.PipelineUtils;
 import com.gmail.holubvojtech.snakes.protocol.DefinedPacket;
 import com.gmail.holubvojtech.snakes.protocol.PacketDecoder;
 import com.gmail.holubvojtech.snakes.protocol.PacketEncoder;
@@ -13,7 +15,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class SnakesClient extends PacketHandler implements Connection {
+public class SnakesClient implements Connection {
 
     private boolean running = false;
     private InetSocketAddress address;
@@ -28,9 +30,10 @@ public class SnakesClient extends PacketHandler implements Connection {
         }
     };
 
-    private boolean connected;
+    private Snakes snakes;
 
-    public SnakesClient(InetSocketAddress address) {
+    public SnakesClient(Snakes snakes, InetSocketAddress address) {
+        this.snakes = snakes;
         this.address = address;
     }
 
@@ -48,10 +51,6 @@ public class SnakesClient extends PacketHandler implements Connection {
             throw new IllegalStateException("Client is not running");
         }
 
-        if (isConnected()) {
-            throw new IllegalStateException("already connected");
-        }
-
         new Bootstrap()
                 .channel(PipelineUtils.getChannel())
                 .group(eventLoops)
@@ -64,7 +63,7 @@ public class SnakesClient extends PacketHandler implements Connection {
                         ch.pipeline().addAfter("frame-decoder", "packet-decoder", new PacketDecoder(Protocol.CLIENT_BOUND));
                         ch.pipeline().addAfter("frame-prepender", "packet-encoder", new PacketEncoder(Protocol.SERVER_BOUND));
 
-                        ch.pipeline().get(HandlerBoss.class).setHandler(SnakesClient.this);
+                        ch.pipeline().get(HandlerBoss.class).setHandler(SnakesClient.this.snakes);
                     }
                 })
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -80,33 +79,6 @@ public class SnakesClient extends PacketHandler implements Connection {
                         callback.accept(future.cause());
                     }
                 });
-    }
-
-    public boolean isConnected() {
-        return connected;
-    }
-
-    @Override
-    public void connected(ChannelWrapper channel) throws Exception {
-        if (connected) {
-            throw new IllegalStateException("already connected");
-        }
-        connected = true;
-        this.ch = channel;
-    }
-
-    @Override
-    public void exception(Throwable t) throws Exception {
-        System.out.println(this.toString() + ": Exception in ChannelAdapter: " + Utils.exception(t));
-        disconnect();
-    }
-
-    @Override
-    public void disconnected(ChannelWrapper channel) throws Exception {
-        if (!connected) {
-            throw new IllegalStateException("not connected");
-        }
-        connected = false;
     }
 
     @Override
@@ -153,7 +125,6 @@ public class SnakesClient extends PacketHandler implements Connection {
 
         running = false;
         closeChannelSync();
-        connected = false;
         eventLoops.shutdownGracefully();
 
         try {
@@ -163,5 +134,9 @@ public class SnakesClient extends PacketHandler implements Connection {
         }
 
         return true;
+    }
+
+    public void setChannel(ChannelWrapper ch) {
+        this.ch = ch;
     }
 }

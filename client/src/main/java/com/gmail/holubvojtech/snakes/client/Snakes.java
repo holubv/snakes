@@ -1,15 +1,24 @@
 package com.gmail.holubvojtech.snakes.client;
 
+import com.gmail.holubvojtech.snakes.Coords;
+import com.gmail.holubvojtech.snakes.Direction;
+import com.gmail.holubvojtech.snakes.Utils;
 import com.gmail.holubvojtech.snakes.client.gui.ConnectMenu;
 import com.gmail.holubvojtech.snakes.client.gui.Gui;
-import com.gmail.holubvojtech.snakes.client.gui.InfoMenu;
+import com.gmail.holubvojtech.snakes.client.gui.InfoPanel;
 import com.gmail.holubvojtech.snakes.client.gui.MainMenu;
+import com.gmail.holubvojtech.snakes.entity.Entity;
+import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
+import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
+import com.gmail.holubvojtech.snakes.netty.PacketHandler;
 import org.newdawn.slick.*;
 import org.newdawn.slick.util.ResourceLoader;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Snakes implements Game {
+public class Snakes extends PacketHandler implements Game {
 
     public static Snakes inst;
     public static Font font;
@@ -18,8 +27,14 @@ public class Snakes implements Game {
     private Gui gui;
     private boolean showFps = true;
 
+    private boolean running;
+    private GameRenderer renderer;
+
     private boolean connecting;
+    private boolean connected;
     private SnakesClient client;
+
+    private List<Entity> entities = new ArrayList<>();
 
     @Override
     public void init(GameContainer container) throws SlickException {
@@ -41,14 +56,38 @@ public class Snakes implements Game {
         gui.savePanel("main", new MainMenu(container));
         gui.savePanel("connect", new ConnectMenu(container));
         gui.setRoot("main");
+
+        renderer = new GameRenderer(new Camera(new Coords(-100, -100), container.getWidth(), container.getHeight()));
+        SnakeEntity snakeEntity = new SnakeEntity(new Coords(0, 0));
+        snakeEntity.getTail().add(Direction.UP);
+        snakeEntity.getTail().add(Direction.UP);
+        snakeEntity.getTail().add(Direction.UP);
+        snakeEntity.getTail().add(Direction.UP);
+        entities.add(snakeEntity);
+        running = true;
+        gui.setNull();
     }
 
     @Override
     public void update(GameContainer container, int delta) throws SlickException {
+        if (running) {
+            for (Entity entity : entities) {
+                entity.update(delta);
+            }
+            SnakeEntity main = (SnakeEntity) entities.get(0);
+            if (main.getCoords().getBlockY() >= 22) {
+                main.setDirection(Direction.RIGHT);
+            }
+            Camera camera = renderer.getCamera();
+            camera.coords.setX(main.getX() * camera.size - camera.width / 2.0).setY(main.getY() * camera.size - camera.height / 2.0);
+        }
     }
 
     @Override
     public void render(GameContainer container, Graphics g) throws SlickException {
+        if (running) {
+            renderer.render(g);
+        }
         gui.render(g);
         if (showFps) {
             g.setColor(Color.red);
@@ -65,22 +104,25 @@ public class Snakes implements Game {
         if (connecting) {
             return;
         }
-        if (client != null && client.isConnected()) {
+        if (client != null && connected) {
             disconnect();
         }
-        gui.setRoot(new InfoMenu(container, "Connecting..."));
+        gui.setRoot(new InfoPanel(container, "Connecting..."));
         connecting = true;
         new Thread(() -> {
-            client = new SnakesClient(new InetSocketAddress(ip, port));
-            client.start();
-            client.connect(err -> {
-                if (err == null) {
-
-                    return;
-                }
-                gui.setRoot(new InfoMenu(container, err, btn -> gui.setRoot("connect")));
-            });
-            connecting = false;
+            try {
+                client = new SnakesClient(Snakes.this, new InetSocketAddress(ip, port));
+                client.start();
+                client.connect(err -> {
+                    if (err != null) {
+                        gui.setRoot(new InfoPanel(container, err, btn -> gui.setRoot("connect")));
+                        return;
+                    }
+                    running = true;
+                });
+            } finally {
+                connecting = false;
+            }
         }).start();
     }
 
@@ -91,11 +133,44 @@ public class Snakes implements Game {
     }
 
     @Override
+    public void connected(ChannelWrapper channel) throws Exception {
+        if (connected) {
+            throw new IllegalStateException("already connected");
+        }
+        connected = true;
+        client.setChannel(channel);
+    }
+
+    @Override
+    public void exception(Throwable t) throws Exception {
+        System.out.println(this.toString() + ": Exception in ChannelAdapter: " + Utils.exception(t));
+        disconnect();
+    }
+
+    @Override
+    public void disconnected(ChannelWrapper channel) throws Exception {
+        if (!connected) {
+            throw new IllegalStateException("not connected");
+        }
+        connected = false;
+    }
+
+
+
+    @Override
     public String getTitle() {
         return "Snakes";
     }
 
+    public List<Entity> getEntities() {
+        return entities;
+    }
+
     public Gui getGui() {
         return gui;
+    }
+
+    public SnakesClient getClient() {
+        return client;
     }
 }
