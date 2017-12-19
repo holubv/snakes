@@ -40,4 +40,27 @@ public enum Direction {
     public int getRy() {
         return ry;
     }
+
+    public boolean isNegative() {
+        return rx < 0 || ry < 0;
+    }
+
+    public static Direction getDirection(Coords start, Coords end) {
+        double dx = Math.abs(end.getX() - start.getX());
+        double dy = Math.abs(end.getY() - start.getY());
+
+        if (dx > dy) {
+            if (end.getX() > start.getX()) {
+                return Direction.RIGHT;
+            } else {
+                return Direction.LEFT;
+            }
+        } else {
+            if (end.getY() > start.getY()) {
+                return Direction.DOWN;
+            } else {
+                return Direction.UP;
+            }
+        }
+    }
 }

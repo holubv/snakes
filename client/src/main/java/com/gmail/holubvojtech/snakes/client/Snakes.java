@@ -12,6 +12,7 @@ import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
 import org.newdawn.slick.*;
+import org.newdawn.slick.util.InputAdapter;
 import org.newdawn.slick.util.ResourceLoader;
 
 import java.net.InetSocketAddress;
@@ -28,6 +29,7 @@ public class Snakes extends PacketHandler implements Game {
     private boolean showFps = true;
 
     private boolean running;
+    private boolean pauseUpdates;
     private GameRenderer renderer;
 
     private boolean connecting;
@@ -62,22 +64,51 @@ public class Snakes extends PacketHandler implements Game {
         snakeEntity.getTail().add(Direction.UP);
         snakeEntity.getTail().add(Direction.UP);
         snakeEntity.getTail().add(Direction.UP);
-        snakeEntity.getTail().add(Direction.UP);
+        snakeEntity.getTail().add(Direction.LEFT);
+        snakeEntity.getTail().add(Direction.LEFT);
+        snakeEntity.getTail().add(Direction.LEFT);
+        snakeEntity.getTail().add(Direction.LEFT);
         entities.add(snakeEntity);
         running = true;
         gui.setNull();
+
+        container.getInput().addKeyListener(new InputAdapter() {
+            @Override
+            public void keyPressed(int key, char c) {
+                if (key == Input.KEY_SPACE) {
+                    pauseUpdates = !pauseUpdates;
+                }
+                if (key == Input.KEY_LEFT) {
+                    ((SnakeEntity) entities.get(0)).setDirection(Direction.LEFT);
+                }
+                if (key == Input.KEY_RIGHT) {
+                    ((SnakeEntity) entities.get(0)).setDirection(Direction.RIGHT);
+                }
+                if (key == Input.KEY_UP) {
+                    ((SnakeEntity) entities.get(0)).setDirection(Direction.UP);
+                }
+                if (key == Input.KEY_DOWN) {
+                    ((SnakeEntity) entities.get(0)).setDirection(Direction.DOWN);
+                }
+                if (key == Input.KEY_ENTER) {
+                    SnakeEntity main = (SnakeEntity) entities.get(0);
+                    Direction last = main.getTail().get(main.getTail().size() - 1);
+                    main.getTail().add(last);
+                }
+            }
+        });
     }
 
     @Override
     public void update(GameContainer container, int delta) throws SlickException {
+        if (pauseUpdates) {
+            return;
+        }
         if (running) {
             for (Entity entity : entities) {
                 entity.update(delta);
             }
             SnakeEntity main = (SnakeEntity) entities.get(0);
-            if (main.getCoords().getBlockY() >= 22) {
-                main.setDirection(Direction.RIGHT);
-            }
             Camera camera = renderer.getCamera();
             camera.coords.setX(main.getX() * camera.size - camera.width / 2.0).setY(main.getY() * camera.size - camera.height / 2.0);
         }

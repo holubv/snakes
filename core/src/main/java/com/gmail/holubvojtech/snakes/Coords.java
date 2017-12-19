@@ -21,6 +21,10 @@ public class Coords {
         return x;
     }
 
+    public double getDecimalX() {
+        return x - (int) x;
+    }
+
     public int getBlockX() {
         return (int) Math.floor(x);
     }
@@ -32,6 +36,10 @@ public class Coords {
 
     public double getY() {
         return y;
+    }
+
+    public double getDecimalY() {
+        return y - (int) y;
     }
 
     public int getBlockY() {
@@ -57,6 +65,10 @@ public class Coords {
         double dx = x - coords.x;
         double dy = y - coords.y;
         return (dx * dx) + (dy * dy);
+    }
+
+    public Coords blockCoords() {
+        return new Coords(getBlockX(), getBlockY());
     }
 
     public Coords copy() {

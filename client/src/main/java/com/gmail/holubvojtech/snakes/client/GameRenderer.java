@@ -51,22 +51,59 @@ public class GameRenderer extends AbstractRenderer {
     public void render(SnakeEntity entity, Object context) {
         Graphics g = (Graphics) context;
 
+        Direction snakeDir = entity.getDirection();
         Coords coords = entity.getCoords();
-        Coords c = camera.transform(coords);
+        Coords c;
         //todo viewport check
+
+        g.setColor(Color.darkGray);
+
+        double off = snakeDir.getRx() != 0 ? coords.getDecimalX() : coords.getDecimalY();
+        if (off < 0) {
+            off = 1 + off;
+        }
+
+        coords = entity.getTailPivot();
+        for (Direction dir : entity.getTail()) {
+            dir.set(coords);
+            if (!snakeDir.isNegative()) {
+                c = camera.transform(coords.blockCoords().add(off * dir.opposite().getRx(), off * dir.opposite().getRy()));
+            } else {
+                c = camera.transform(coords.blockCoords().add((1 - off) * -dir.getRx(), (1 - off) * -dir.getRy()));
+            }
+
+            g.setColor(Color.darkGray);
+            g.fillRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);
+        }
+
+        coords = entity.getCoords();
+        c = camera.transform(coords);
 
         g.setColor(Color.black);
         g.fillRect((float) c.getX(), (float) c.getY(), camera.size, camera.size);
 
+        // debug rendering... vvv
+
         g.setColor(Color.blue);
         g.drawString(coords.getBlockX() + "," + coords.getBlockY(), (float) c.getX(), (float) c.getY() + 1);
 
-        g.setColor(Color.darkGray);
+        /*g.setColor(Color.green);
+        coords = entity.getTailPivot();
         for (Direction d : entity.getTail()) {
             d.set(coords);
-            c = camera.transform(coords);
-            g.fillRect((float) c.getX(), (float) c.getY(), camera.size, camera.size);
+            c = camera.transform(coords.blockCoords());
+
+            g.setColor(Color.green);
+            g.drawRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);
+
+            g.setColor(Color.lightGray);
+            g.drawString(d.name().substring(0, 1), (float)c.getX(), (float)c.getY());
         }
+
+        coords = entity.getTailPivot();
+        c = camera.transform(coords);
+        g.setColor(Color.yellow);
+        g.drawRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);*/
     }
 
     public Camera getCamera() {
