@@ -38,6 +38,8 @@ public class Snakes extends PacketHandler implements Game {
 
     private List<Entity> entities = new ArrayList<>();
 
+    private long lastDirectionChange = 0;
+
     @Override
     public void init(GameContainer container) throws SlickException {
         inst = this;
@@ -79,16 +81,36 @@ public class Snakes extends PacketHandler implements Game {
                     pauseUpdates = !pauseUpdates;
                 }
                 if (key == Input.KEY_LEFT) {
-                    ((SnakeEntity) entities.get(0)).setDirection(Direction.LEFT);
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        ((SnakeEntity) entities.get(0)).setDirection(Direction.LEFT);
+                    } else {
+                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.LEFT);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
                 }
                 if (key == Input.KEY_RIGHT) {
-                    ((SnakeEntity) entities.get(0)).setDirection(Direction.RIGHT);
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        ((SnakeEntity) entities.get(0)).setDirection(Direction.RIGHT);
+                    } else {
+                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.RIGHT);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
                 }
                 if (key == Input.KEY_UP) {
-                    ((SnakeEntity) entities.get(0)).setDirection(Direction.UP);
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        ((SnakeEntity) entities.get(0)).setDirection(Direction.UP);
+                    } else {
+                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.UP);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
                 }
                 if (key == Input.KEY_DOWN) {
-                    ((SnakeEntity) entities.get(0)).setDirection(Direction.DOWN);
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        ((SnakeEntity) entities.get(0)).setDirection(Direction.DOWN);
+                    } else {
+                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.DOWN);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
                 }
                 if (key == Input.KEY_ENTER) {
                     SnakeEntity main = (SnakeEntity) entities.get(0);

@@ -18,7 +18,7 @@ public class SnakeEntity extends Entity {
     private int lx;
     private int ly;
 
-    private Direction nextDirection;
+    private LinkedList<Direction> nextDirection = new LinkedList<>();
     private Direction lastDirection = direction;
 
 
@@ -46,12 +46,12 @@ public class SnakeEntity extends Entity {
 
         boolean changed = false;
 
-        switch (direction) {
+        switch (lastDirection) {
             case UP:
-                changed = ly >= coords.getBlockY() + 1;
+                changed = ly - 0.9 > coords.getY();
                 break;
             case LEFT:
-                changed = lx >= coords.getBlockX() + 1;
+                changed = lx - 0.9 > coords.getX();
                 break;
             case DOWN:
                 changed = ly < coords.getBlockY();
@@ -63,10 +63,11 @@ public class SnakeEntity extends Entity {
 
         if (changed) {
 
-            if (nextDirection != null && nextDirection != direction) {
+            System.out.println("changed " + System.currentTimeMillis());
+
+            if (!nextDirection.isEmpty() && nextDirection.peek() != direction) {
                 lastDirection = direction;
-                direction = nextDirection;
-                nextDirection = null;
+                direction = nextDirection.pop();
                 coords.setX(Math.round(coords.getX()));
                 coords.setY(Math.round(coords.getY()));
             }
@@ -102,7 +103,24 @@ public class SnakeEntity extends Entity {
         if (direction == this.direction || direction == this.direction.opposite()) {
             return;
         }
-        this.nextDirection = direction;
+        this.nextDirection.clear();
+        this.nextDirection.add(direction);
+    }
+
+    public void enqueueDirection(Direction direction) {
+        Direction last = nextDirection.peekLast();
+        if (last == null) {
+            setDirection(direction);
+            return;
+        }
+        if (direction == last || direction == last.opposite()) {
+            return;
+        }
+        nextDirection.add(direction);
+    }
+
+    public LinkedList<Direction> getNextDirection() {
+        return nextDirection;
     }
 
     public Direction getDirection() {
