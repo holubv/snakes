@@ -63,8 +63,6 @@ public class SnakeEntity extends Entity {
 
         if (changed) {
 
-            System.out.println("changed " + System.currentTimeMillis());
-
             if (!nextDirection.isEmpty() && nextDirection.peek() != direction) {
                 lastDirection = direction;
                 direction = nextDirection.pop();
