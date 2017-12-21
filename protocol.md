@@ -88,7 +88,6 @@ Relative coords (relative to the head or previous tail)
 |----|----|
 | Player id | short |
 | Speed | double |
-| Skin id | byte |
 | Color R | byte |
 | Color G | byte |
 | Color B | byte |

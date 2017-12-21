@@ -1,6 +1,7 @@
 package com.gmail.holubvojtech.snakes.entity;
 
 import com.gmail.holubvojtech.snakes.AbstractRenderer;
+import com.gmail.holubvojtech.snakes.Color;
 import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 
@@ -14,9 +15,13 @@ public class SnakeEntity extends Entity {
     private Coords tailPivot;
     private Coords lastPivot;
 
+    private int playerId;
+
     private double speed = 0.0055;
     private int lx;
     private int ly;
+
+    private Color color;
 
     private LinkedList<Direction> nextDirection = new LinkedList<>();
     private Direction lastDirection = direction;
@@ -131,5 +136,30 @@ public class SnakeEntity extends Entity {
 
     public List<Direction> getTail() {
         return tail;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public int getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public SnakeEntity setColor(Color color) {
+        this.color = color;
+        return this;
     }
 }

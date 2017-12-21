@@ -50,7 +50,7 @@ public class SnakeMove extends DefinedPacket {
     public void read(ByteBuf buf) {
         this.entityId = (int) buf.readUnsignedInt();
         this.coords = readCoords(buf);
-        this.direction = Direction.values()[buf.readByte()];
+        this.direction = Direction.values()[buf.readUnsignedByte()];
         this.tail = new Direction[buf.readUnsignedShort()];
 
         byte[] buff = new byte[(int) Math.ceil(tail.length / 4.0)];

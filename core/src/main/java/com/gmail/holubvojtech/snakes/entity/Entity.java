@@ -18,7 +18,7 @@ public abstract class Entity {
     public Entity(int entityId, EntityType type, Coords coords) {
         this.entityId = entityId;
         this.type = type;
-        this.coords = coords;
+        this.coords = coords.copy();
     }
 
     public void teleport(Coords coords) {

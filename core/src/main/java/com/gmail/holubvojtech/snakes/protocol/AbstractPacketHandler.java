@@ -44,4 +44,10 @@ public class AbstractPacketHandler {
 
     public void handle(SnakeMove packet) throws Exception {
     }
+
+    public void handle(EntitySpawn packet) throws Exception {
+    }
+
+    public void handle(EntityRemove packet) throws Exception {
+    }
 }

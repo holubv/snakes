@@ -1,5 +1,6 @@
 package com.gmail.holubvojtech.snakes.protocol;
 
+import com.gmail.holubvojtech.snakes.Color;
 import com.gmail.holubvojtech.snakes.Coords;
 import io.netty.buffer.ByteBuf;
 
@@ -31,6 +32,20 @@ public abstract class DefinedPacket {
         return new Coords(
                 buf.readFloat(),
                 buf.readFloat()
+        );
+    }
+
+    public static void writeColor(Color color, ByteBuf buf) {
+        buf.writeByte(color.getR());
+        buf.writeByte(color.getG());
+        buf.writeByte(color.getB());
+    }
+
+    public static Color readColor(ByteBuf buf) {
+        return new Color(
+                buf.readUnsignedByte(),
+                buf.readUnsignedByte(),
+                buf.readUnsignedByte()
         );
     }
 

@@ -5,12 +5,16 @@ import com.gmail.holubvojtech.snakes.Coords;
 
 public class FoodEntity extends Entity {
 
-    public FoodEntity(Coords coords) {
+    private Type type;
+
+    public FoodEntity(Coords coords, Type foodType) {
         super(EntityType.FOOD, coords);
+        this.type = foodType;
     }
 
-    public FoodEntity(int entityId, Coords coords) {
+    public FoodEntity(int entityId, Coords coords, Type foodType) {
         super(entityId, EntityType.FOOD, coords);
+        this.type = foodType;
     }
 
     @Override
@@ -18,7 +22,11 @@ public class FoodEntity extends Entity {
         renderer.render(this, context);
     }
 
-    public enum Effect {
+    public Type getFoodType() {
+        return type;
+    }
+
+    public enum Type {
         GROW,
         SHRINK
     }
