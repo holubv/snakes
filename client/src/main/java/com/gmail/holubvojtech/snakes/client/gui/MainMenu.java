@@ -6,13 +6,16 @@ import org.newdawn.slick.GameContainer;
 
 public class MainMenu extends Panel {
 
+    private InputField nameField;
+
     public MainMenu(GameContainer container) {
         super(0, 0, container.getWidth(), container.getHeight());
 
         setBackground(Color.white);
 
         addChild(new Label(10, 10, "Snakes v1", Snakes.font));
-        addChild(new InputField(width - 266, 10, 240, Snakes.font).setHint("Nickname"));
+        this.nameField = new InputField(width - 266, 10, 240, Snakes.font).setHint("Nickname");
+        addChild(this.nameField);
 
         addChild(
                 new Button(width - 266, height - 80,
@@ -33,5 +36,9 @@ public class MainMenu extends Panel {
                         .setHoverBackground(Color.darkGray)
                         .onClick(btn -> Snakes.inst.getGui().setRoot("connect"))
         );
+    }
+
+    public InputField getNameField() {
+        return nameField;
     }
 }

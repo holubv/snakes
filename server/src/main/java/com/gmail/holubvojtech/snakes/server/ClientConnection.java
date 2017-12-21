@@ -5,13 +5,26 @@ import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
 import com.gmail.holubvojtech.snakes.netty.Connection;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
 import com.gmail.holubvojtech.snakes.protocol.DefinedPacket;
+import com.gmail.holubvojtech.snakes.protocol.Protocol;
+import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
+import com.gmail.holubvojtech.snakes.protocol.packet.Login;
+import com.gmail.holubvojtech.snakes.protocol.packet.LoginSuccess;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClientConnection extends PacketHandler implements Connection {
 
+    private static final AtomicInteger NEXT_PLAYER_ID = new AtomicInteger(1);
+
     private SnakesServer server;
+
+    private int playerId;
+    private String username;
+    private String version;
+    private boolean handshake;
+    private boolean playState;
 
     private ChannelWrapper ch;
     private final Unsafe unsafe = new Unsafe() {
@@ -28,6 +41,40 @@ public class ClientConnection extends PacketHandler implements Connection {
     @Override
     public InetSocketAddress getAddress() {
         return (InetSocketAddress) ch.getHandle().remoteAddress();
+    }
+
+    @Override
+    public void handle(Handshake handshake) throws Exception {
+        if (!handshake.isLogin()) {
+            //todo send server status
+            disconnect();
+            return;
+        }
+
+        if (handshake.getProtocolVersion() != Protocol.VERSION) {
+            //todo send reason?
+            disconnect();
+            return;
+        }
+
+        this.handshake = true;
+    }
+
+    @Override
+    public void handle(Login login) throws Exception {
+        if (playState) {
+            throw new IllegalStateException("already logged in");
+        }
+        this.username = login.getUsername();
+        if (!Utils.validateUsername(username)) {
+            throw new IllegalArgumentException("invalid nickname");
+        }
+        this.version = login.getVersion();
+        this.playerId = NEXT_PLAYER_ID.getAndIncrement();
+
+        unsafe().sendPacket(new LoginSuccess(playerId));
+        playState = true;
+        System.out.println("Player " + username + "(" + playerId + ") connected to the server");
     }
 
     @Override

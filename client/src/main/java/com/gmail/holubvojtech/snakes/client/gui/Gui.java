@@ -63,6 +63,10 @@ public class Gui implements MouseListener, KeyListener {
         return this;
     }
 
+    public Panel getPanel(String key) {
+        return savedPanels.get(key);
+    }
+
     public Gui savePanel(String key, Panel panel) {
         savedPanels.put(key, panel);
         return this;

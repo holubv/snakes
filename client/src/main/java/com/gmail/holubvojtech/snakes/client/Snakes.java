@@ -1,18 +1,15 @@
 package com.gmail.holubvojtech.snakes.client;
 
 import com.gmail.holubvojtech.snakes.Coords;
-import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.Utils;
-import com.gmail.holubvojtech.snakes.client.gui.ConnectMenu;
-import com.gmail.holubvojtech.snakes.client.gui.Gui;
-import com.gmail.holubvojtech.snakes.client.gui.InfoPanel;
-import com.gmail.holubvojtech.snakes.client.gui.MainMenu;
+import com.gmail.holubvojtech.snakes.client.gui.*;
 import com.gmail.holubvojtech.snakes.entity.Entity;
-import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
+import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
+import com.gmail.holubvojtech.snakes.protocol.packet.Login;
+import com.gmail.holubvojtech.snakes.protocol.packet.LoginSuccess;
 import org.newdawn.slick.*;
-import org.newdawn.slick.util.InputAdapter;
 import org.newdawn.slick.util.ResourceLoader;
 
 import java.net.InetSocketAddress;
@@ -21,6 +18,8 @@ import java.util.List;
 
 public class Snakes extends PacketHandler implements Game {
 
+    public static final String VERSION = "0.1 indev";
+
     public static Snakes inst;
     public static Font font;
 
@@ -28,17 +27,17 @@ public class Snakes extends PacketHandler implements Game {
     private Gui gui;
     private boolean showFps = true;
 
+    private InputField nameField;
+
     private boolean running;
-    private boolean pauseUpdates;
     private GameRenderer renderer;
 
     private boolean connecting;
     private boolean connected;
     private SnakesClient client;
 
+    private int playerId;
     private List<Entity> entities = new ArrayList<>();
-
-    private long lastDirectionChange = 0;
 
     @Override
     public void init(GameContainer container) throws SlickException {
@@ -57,82 +56,24 @@ public class Snakes extends PacketHandler implements Game {
         }
 
         gui = new Gui(container.getInput());
-        gui.savePanel("main", new MainMenu(container));
+        MainMenu mm = new MainMenu(container);
+        this.nameField = mm.getNameField();
+        gui.savePanel("main", mm);
         gui.savePanel("connect", new ConnectMenu(container));
         gui.setRoot("main");
 
-        renderer = new GameRenderer(new Camera(new Coords(-100, -100), container.getWidth(), container.getHeight()));
-        SnakeEntity snakeEntity = new SnakeEntity(new Coords(0, 0));
-        snakeEntity.getTail().add(Direction.UP);
-        snakeEntity.getTail().add(Direction.UP);
-        snakeEntity.getTail().add(Direction.UP);
-        snakeEntity.getTail().add(Direction.LEFT);
-        snakeEntity.getTail().add(Direction.LEFT);
-        snakeEntity.getTail().add(Direction.LEFT);
-        snakeEntity.getTail().add(Direction.LEFT);
-        entities.add(snakeEntity);
-        running = true;
-        gui.setNull();
-
-        container.getInput().addKeyListener(new InputAdapter() {
-            @Override
-            public void keyPressed(int key, char c) {
-                if (key == Input.KEY_SPACE) {
-                    pauseUpdates = !pauseUpdates;
-                }
-                if (key == Input.KEY_LEFT) {
-                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
-                        ((SnakeEntity) entities.get(0)).setDirection(Direction.LEFT);
-                    } else {
-                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.LEFT);
-                    }
-                    lastDirectionChange = System.currentTimeMillis();
-                }
-                if (key == Input.KEY_RIGHT) {
-                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
-                        ((SnakeEntity) entities.get(0)).setDirection(Direction.RIGHT);
-                    } else {
-                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.RIGHT);
-                    }
-                    lastDirectionChange = System.currentTimeMillis();
-                }
-                if (key == Input.KEY_UP) {
-                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
-                        ((SnakeEntity) entities.get(0)).setDirection(Direction.UP);
-                    } else {
-                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.UP);
-                    }
-                    lastDirectionChange = System.currentTimeMillis();
-                }
-                if (key == Input.KEY_DOWN) {
-                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
-                        ((SnakeEntity) entities.get(0)).setDirection(Direction.DOWN);
-                    } else {
-                        ((SnakeEntity) entities.get(0)).enqueueDirection(Direction.DOWN);
-                    }
-                    lastDirectionChange = System.currentTimeMillis();
-                }
-                if (key == Input.KEY_ENTER) {
-                    SnakeEntity main = (SnakeEntity) entities.get(0);
-                    Direction last = main.getTail().get(main.getTail().size() - 1);
-                    main.getTail().add(last);
-                }
-            }
-        });
+        renderer = new GameRenderer(new Camera(new Coords(), container.getWidth(), container.getHeight()));
     }
 
     @Override
     public void update(GameContainer container, int delta) throws SlickException {
-        if (pauseUpdates) {
-            return;
-        }
         if (running) {
             for (Entity entity : entities) {
                 entity.update(delta);
             }
-            SnakeEntity main = (SnakeEntity) entities.get(0);
-            Camera camera = renderer.getCamera();
-            camera.coords.setX(main.getX() * camera.size - camera.width / 2.0).setY(main.getY() * camera.size - camera.height / 2.0);
+            //SnakeEntity main = (SnakeEntity) entities.get(0);
+            //Camera camera = renderer.getCamera();
+            //camera.coords.setX(main.getX() * camera.size - camera.width / 2.0).setY(main.getY() * camera.size - camera.height / 2.0);
         }
     }
 
@@ -169,9 +110,7 @@ public class Snakes extends PacketHandler implements Game {
                 client.connect(err -> {
                     if (err != null) {
                         gui.setRoot(new InfoPanel(container, err, btn -> gui.setRoot("connect")));
-                        return;
                     }
-                    running = true;
                 });
             } finally {
                 connecting = false;
@@ -181,8 +120,16 @@ public class Snakes extends PacketHandler implements Game {
 
     public void disconnect() {
         if (client != null) {
-            client.stopSync();
+            client.stop();
         }
+    }
+
+    @Override
+    public void handle(LoginSuccess loginSuccess) throws Exception {
+        playerId = loginSuccess.getPlayerId();
+        System.out.println("logged in: player id = " + playerId);
+        gui.setNull();
+        running = true; //start rendering the scene
     }
 
     @Override
@@ -192,6 +139,13 @@ public class Snakes extends PacketHandler implements Game {
         }
         connected = true;
         client.setChannel(channel);
+
+        //todo show cancel button in connecting screen
+
+        System.out.println("handshaking...");
+        client.unsafe().sendPacket(new Handshake(true));
+        System.out.println("logging in...");
+        client.unsafe().sendPacket(new Login(nameField.getText(), VERSION));
     }
 
     @Override
@@ -206,9 +160,11 @@ public class Snakes extends PacketHandler implements Game {
             throw new IllegalStateException("not connected");
         }
         connected = false;
+        running = false;
+        System.out.println("Disconnected");
+        disconnect();
+        gui.setRoot(new InfoPanel(container, "Disconnected", btn -> gui.setRoot("main")));
     }
-
-
 
     @Override
     public String getTitle() {

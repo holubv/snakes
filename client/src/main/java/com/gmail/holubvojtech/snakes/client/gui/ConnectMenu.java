@@ -31,8 +31,8 @@ public class ConnectMenu extends Panel {
         addChild(new InputField(10, 250, width - 36, Snakes.font).setHint("Server IP"));
         addChild(new InputField(10, 292, width - 36, Snakes.font).setHint("Port"));*/
 
-        serverIpField = new InputField(10, 40, width - 36, Snakes.font).setHint("Server IP");
-        portField = new InputField(10, 82, width - 36, Snakes.font).setHint("Port");
+        serverIpField = new InputField(10, 40, width - 36, Snakes.font).setHint("Server IP").setText("localhost");
+        portField = new InputField(10, 82, width - 36, Snakes.font).setHint("Port").setText("25565");
 
         addChild(serverIpField);
         addChild(portField);
