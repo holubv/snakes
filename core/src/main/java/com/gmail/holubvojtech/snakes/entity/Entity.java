@@ -7,15 +7,17 @@ public abstract class Entity {
 
     public static int nextEntityID = 1;
 
-    protected int entityId;
+    protected final int entityId;
+    protected final EntityType type;
     protected Coords coords;
 
-    public Entity(Coords coords) {
-        this(nextEntityID++, coords);
+    public Entity(EntityType type, Coords coords) {
+        this(nextEntityID++, type, coords);
     }
 
-    public Entity(int entityId, Coords coords) {
+    public Entity(int entityId, EntityType type, Coords coords) {
         this.entityId = entityId;
+        this.type = type;
         this.coords = coords;
     }
 
@@ -34,6 +36,10 @@ public abstract class Entity {
 
     public int getEntityId() {
         return entityId;
+    }
+
+    public EntityType getType() {
+        return type;
     }
 
     public double getX() {

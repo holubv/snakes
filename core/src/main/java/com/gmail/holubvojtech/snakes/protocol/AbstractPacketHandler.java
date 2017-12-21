@@ -8,37 +8,40 @@ public class AbstractPacketHandler {
         Server bound
      */
 
-    public void handle(Handshake handshake) throws Exception {
+    public void handle(Handshake packet) throws Exception {
     }
 
-    public void handle(Login login) throws Exception {
+    public void handle(Login packet) throws Exception {
     }
 
-    public void handle(RespawnRequest respawnRequest) throws Exception {
+    public void handle(RespawnRequest packet) throws Exception {
     }
 
-    public void handle(Chat chat) throws Exception {
+    public void handle(Chat packet) throws Exception {
     }
 
     /*
         Client bound
      */
 
-    public void handle(ServerStatus serverStatus) throws Exception {
+    public void handle(ServerStatus packet) throws Exception {
     }
 
-    public void handle(Disconnect disconnect) throws Exception {
+    public void handle(Disconnect packet) throws Exception {
     }
 
-    public void handle(LoginSuccess loginSuccess) throws Exception {
+    public void handle(LoginSuccess packet) throws Exception {
     }
 
-    public void handle(ChatMessage chatMessage) throws Exception {
+    public void handle(ChatMessage packet) throws Exception {
     }
 
-    public void handle(PlayerLeave playerLeave) throws Exception {
+    public void handle(PlayerLeave packet) throws Exception {
     }
 
-    public void handle(PlayerJoin playerJoin) throws Exception {
+    public void handle(PlayerJoin packet) throws Exception {
+    }
+
+    public void handle(SnakeMove packet) throws Exception {
     }
 }

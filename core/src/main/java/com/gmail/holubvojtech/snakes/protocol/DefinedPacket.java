@@ -1,5 +1,6 @@
 package com.gmail.holubvojtech.snakes.protocol;
 
+import com.gmail.holubvojtech.snakes.Coords;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.Charset;
@@ -19,6 +20,18 @@ public abstract class DefinedPacket {
     public static void writeUUID(UUID uuid, ByteBuf buf) {
         buf.writeLong(uuid.getMostSignificantBits());
         buf.writeLong(uuid.getLeastSignificantBits());
+    }
+
+    public static void writeCoords(Coords coords, ByteBuf buf) {
+        buf.writeFloat((float) coords.getX());
+        buf.writeFloat((float) coords.getY());
+    }
+
+    public static Coords readCoords(ByteBuf buf) {
+        return new Coords(
+                buf.readFloat(),
+                buf.readFloat()
+        );
     }
 
     public static void writeString(String s, ByteBuf buf) {

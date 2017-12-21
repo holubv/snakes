@@ -42,9 +42,10 @@ Client bound (C <- S)
 
 | name | field type | description |
 |----|----|----|
-| Entity id | short | |
-| Head X | signed short | |
-| Head Y | signed short | |
+| Entity id | int | |
+| Head X | signed float | |
+| Head Y | signed float | |
+| Direction | byte | |
 | Tail length | short | |
 | Tail relative position | byte[] | 4 tails are 1 byte (00-00-00-00) |
 
@@ -62,8 +63,8 @@ Byte array
 Relative coords (relative to the head or previous tail)
 00 = [0, -1] up
 11 = [0, +1] down
-01 = [+1, 0] right
 10 = [-1, 0] left
+01 = [+1, 0] right
 ```
 
 **[C 0x06] Player death**
@@ -78,14 +79,15 @@ Relative coords (relative to the head or previous tail)
 |----|----|----|
 | Entity id | int | |
 | Entity type | byte | 0 = snake |
-| X | signed short | |
-| Y | signed short | |
+| X | signed float | |
+| Y | signed float | |
 | Entity metadata | ... | |
 
 
 | Snake metadata | |
 |----|----|
 | Player id | short |
+| Speed | double |
 | Skin id | byte |
 | Color R | byte |
 | Color G | byte |
@@ -100,7 +102,7 @@ Relative coords (relative to the head or previous tail)
 
 | name | field type | description |
 |----|----|----|
-| Entity id | short | |
+| Entity id | int | |
 
 **[C 0x09] ChatMessage**
 

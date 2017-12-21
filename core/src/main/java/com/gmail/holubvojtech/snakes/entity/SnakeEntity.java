@@ -23,12 +23,12 @@ public class SnakeEntity extends Entity {
 
 
     public SnakeEntity(Coords coords) {
-        super(coords);
+        super(EntityType.SNAKE, coords);
         tailPivot = coords.blockCoords();
     }
 
     public SnakeEntity(int entityId, Coords coords) {
-        super(entityId, coords);
+        super(entityId, EntityType.SNAKE, coords);
         tailPivot = coords.blockCoords();
     }
 
