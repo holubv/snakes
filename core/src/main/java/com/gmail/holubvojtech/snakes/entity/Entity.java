@@ -3,9 +3,11 @@ package com.gmail.holubvojtech.snakes.entity;
 import com.gmail.holubvojtech.snakes.AbstractRenderer;
 import com.gmail.holubvojtech.snakes.Coords;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public abstract class Entity {
 
-    public static int nextEntityID = 1;
+    private static final AtomicInteger NEXT_ENTITY_ID = new AtomicInteger(1);
 
     protected final int entityId;
     protected final EntityType type;
@@ -14,7 +16,7 @@ public abstract class Entity {
     protected boolean removed;
 
     public Entity(EntityType type, Coords coords) {
-        this(nextEntityID++, type, coords);
+        this(NEXT_ENTITY_ID.getAndIncrement(), type, coords);
     }
 
     public Entity(int entityId, EntityType type, Coords coords) {
