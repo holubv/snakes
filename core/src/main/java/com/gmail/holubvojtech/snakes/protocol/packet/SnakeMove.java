@@ -46,12 +46,8 @@ public class SnakeMove extends DefinedPacket {
         this.tail = tail.toArray(new Direction[tail.size()]);
     }
 
-    @Override
-    public void read(ByteBuf buf) {
-        this.entityId = (int) buf.readUnsignedInt();
-        this.coords = readCoords(buf);
-        this.direction = Direction.values()[buf.readUnsignedByte()];
-        this.tail = new Direction[buf.readUnsignedShort()];
+    public static Direction[] readSnakeTail(ByteBuf buf) {
+        Direction[] tail = new Direction[buf.readUnsignedShort()];
 
         byte[] buff = new byte[(int) Math.ceil(tail.length / 4.0)];
         buf.readBytes(buff);
@@ -64,28 +60,26 @@ public class SnakeMove extends DefinedPacket {
             byte val = (byte) (buff[bp] >> (off * 2) & 0b11);
             switch (val) {
                 case 0b00:
-                    this.tail[tp] = Direction.UP;
+                    tail[tp] = Direction.UP;
                     break;
                 case 0b11:
-                    this.tail[tp] = Direction.DOWN;
+                    tail[tp] = Direction.DOWN;
                     break;
                 case 0b10:
-                    this.tail[tp] = Direction.LEFT;
+                    tail[tp] = Direction.LEFT;
                     break;
                 case 0b01:
-                    this.tail[tp] = Direction.RIGHT;
+                    tail[tp] = Direction.RIGHT;
                     break;
                 default:
                     throw new DecoderException();
             }
         }
+
+        return tail;
     }
 
-    @Override
-    public void write(ByteBuf buf) {
-        buf.writeInt(entityId);
-        writeCoords(coords, buf);
-        buf.writeByte(direction.ordinal());
+    public static void writeSnakeTail(ByteBuf buf, Direction[] tail) {
         buf.writeShort(tail.length);
 
         byte[] buff = new byte[(int) Math.ceil(tail.length / 4.0)];
@@ -100,6 +94,22 @@ public class SnakeMove extends DefinedPacket {
         }
 
         buf.writeBytes(buff);
+    }
+
+    @Override
+    public void read(ByteBuf buf) {
+        this.entityId = (int) buf.readUnsignedInt();
+        this.coords = readCoords(buf);
+        this.direction = Direction.values()[buf.readUnsignedByte()];
+        this.tail = readSnakeTail(buf);
+    }
+
+    @Override
+    public void write(ByteBuf buf) {
+        buf.writeInt(entityId);
+        writeCoords(coords, buf);
+        buf.writeByte(direction.ordinal());
+        writeSnakeTail(buf, tail);
     }
 
     @Override

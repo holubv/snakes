@@ -31,6 +31,10 @@ public class EntityRemove extends DefinedPacket {
         handler.handle(this);
     }
 
+    public int getEntityId() {
+        return entityId;
+    }
+
     @Override
     public String toString() {
         return "EntityRemove{" +

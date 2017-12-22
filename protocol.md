@@ -117,6 +117,14 @@ Relative coords (relative to the head or previous tail)
 | Player id | short | sender |
 | Message | String | |
 
+**[C 0x0B] Update Direction**
+
+| name | field type | description |
+|----|----|----|
+| Direction | byte | |
+| Head X | signed float | |
+| Head Y | signed float | |
+
 
 Server bound (C -> S)
 ------------------------------------
@@ -148,6 +156,14 @@ of snake entity with client's player id
 | name | field type | description |
 |----|----|----|
 | Message | String | |
+
+**[S 0x04] Update Direction**
+
+| name | field type | description |
+|----|----|----|
+| Direction | byte | |
+| Head X | signed float | |
+| Head Y | signed float | |
 
 
 Connecting to the server

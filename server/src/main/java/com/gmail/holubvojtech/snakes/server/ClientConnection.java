@@ -1,6 +1,7 @@
 package com.gmail.holubvojtech.snakes.server;
 
 import com.gmail.holubvojtech.snakes.Utils;
+import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
 import com.gmail.holubvojtech.snakes.netty.Connection;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
@@ -9,6 +10,7 @@ import com.gmail.holubvojtech.snakes.protocol.Protocol;
 import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
 import com.gmail.holubvojtech.snakes.protocol.packet.Login;
 import com.gmail.holubvojtech.snakes.protocol.packet.LoginSuccess;
+import com.gmail.holubvojtech.snakes.protocol.packet.UpdateDirection;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +23,7 @@ public class ClientConnection extends PacketHandler implements Connection {
     private SnakesServer server;
 
     private int playerId;
+    private int snakeId;
     private String username;
     private String version;
     private boolean handshake;
@@ -41,6 +44,18 @@ public class ClientConnection extends PacketHandler implements Connection {
     @Override
     public InetSocketAddress getAddress() {
         return (InetSocketAddress) ch.getHandle().remoteAddress();
+    }
+
+    @Override
+    public void handle(UpdateDirection packet) throws Exception {
+        this.server.broadcast(packet, this);
+        this.server.schedule(() -> {
+            SnakeEntity entity = (SnakeEntity) server.getEntity(snakeId);
+            if (entity != null) {
+                System.out.println("@" + packet.getCoords());
+                entity.updateDirection(packet.getDirection(), packet.getCoords());
+            }
+        });
     }
 
     @Override
@@ -75,12 +90,30 @@ public class ClientConnection extends PacketHandler implements Connection {
         unsafe().sendPacket(new LoginSuccess(playerId));
         playState = true;
         System.out.println("Player " + username + "(" + playerId + ") connected to the server");
+        this.server.onPlayerConnected(this);
+    }
+
+    public int getPlayerId() {
+        return playerId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public int getSnakeId() {
+        return snakeId;
+    }
+
+    public ClientConnection setSnakeId(int snakeId) {
+        this.snakeId = snakeId;
+        return this;
     }
 
     @Override
     public void connected(ChannelWrapper channel) throws Exception {
         this.ch = channel;
-        this.server.addConnection(this);
+        this.server.__addConnection(this);
     }
 
     @Override
@@ -91,7 +124,7 @@ public class ClientConnection extends PacketHandler implements Connection {
 
     @Override
     public void disconnected(ChannelWrapper channel) throws Exception {
-        server.removeConnection(this);
+        server.__removeConnection(this);
     }
 
     @Override

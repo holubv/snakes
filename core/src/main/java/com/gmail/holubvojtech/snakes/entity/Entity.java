@@ -11,6 +11,8 @@ public abstract class Entity {
     protected final EntityType type;
     protected Coords coords;
 
+    protected boolean removed;
+
     public Entity(EntityType type, Coords coords) {
         this(nextEntityID++, type, coords);
     }
@@ -29,7 +31,7 @@ public abstract class Entity {
         this.coords.setX(x).setY(y);
     }
 
-    public void update(int delta) {
+    public void update(double delta) {
     }
 
     public abstract void render(AbstractRenderer renderer, Object context);
@@ -52,5 +54,23 @@ public abstract class Entity {
 
     public Coords getCoords() {
         return coords.copy();
+    }
+
+    public void remove() {
+        this.removed = true;
+    }
+
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    @Override
+    public String toString() {
+        return "Entity{" +
+                "entityId=" + entityId +
+                ", type=" + type +
+                ", coords=" + coords +
+                ", removed=" + removed +
+                '}';
     }
 }

@@ -5,6 +5,8 @@ import com.gmail.holubvojtech.snakes.protocol.PacketWrapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.util.concurrent.TimeUnit;
+
 public class HandlerBoss extends ChannelInboundHandlerAdapter {
 
     private ChannelWrapper channel;
@@ -42,7 +44,14 @@ public class HandlerBoss extends ChannelInboundHandlerAdapter {
                 DefinedPacket dp = packet.getPacket();
 
                 if (dp != null) {
-                    dp.handle(this.handler);
+                    ctx.channel().eventLoop().schedule(() -> {
+                        try {
+                            dp.handle(this.handler);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }, 50, TimeUnit.MILLISECONDS);
+                    //dp.handle(this.handler);
                 }
 
             } finally {

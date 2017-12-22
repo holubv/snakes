@@ -1,20 +1,26 @@
 package com.gmail.holubvojtech.snakes.client;
 
 import com.gmail.holubvojtech.snakes.Coords;
+import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.Utils;
 import com.gmail.holubvojtech.snakes.client.gui.*;
 import com.gmail.holubvojtech.snakes.entity.Entity;
+import com.gmail.holubvojtech.snakes.entity.EntityType;
+import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
-import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
-import com.gmail.holubvojtech.snakes.protocol.packet.Login;
-import com.gmail.holubvojtech.snakes.protocol.packet.LoginSuccess;
+import com.gmail.holubvojtech.snakes.protocol.packet.*;
 import org.newdawn.slick.*;
+import org.newdawn.slick.util.InputAdapter;
 import org.newdawn.slick.util.ResourceLoader;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Snakes extends PacketHandler implements Game {
 
@@ -35,9 +41,14 @@ public class Snakes extends PacketHandler implements Game {
     private boolean connecting;
     private boolean connected;
     private SnakesClient client;
+    private Queue<Runnable> scheduled = new ConcurrentLinkedQueue<>();
 
     private int playerId;
+    private SnakeEntity playerSnake;
+    private Map<Integer, String> players = new ConcurrentHashMap<>();
     private List<Entity> entities = new ArrayList<>();
+
+    private long lastDirectionChange;
 
     @Override
     public void init(GameContainer container) throws SlickException {
@@ -45,6 +56,7 @@ public class Snakes extends PacketHandler implements Game {
         this.container = container;
         container.setShowFPS(false);
         container.setTargetFrameRate(60);
+        container.setAlwaysRender(true);
 
         try {
             font = new TrueTypeFont(
@@ -63,17 +75,97 @@ public class Snakes extends PacketHandler implements Game {
         gui.setRoot("main");
 
         renderer = new GameRenderer(new Camera(new Coords(), container.getWidth(), container.getHeight()));
+
+        container.getInput().addKeyListener(new InputAdapter() {
+            @Override
+            public void keyPressed(int key, char c) {
+                if (key == Input.KEY_LEFT) {
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        playerSnake.setDirection(Direction.LEFT);
+                    } else {
+                        playerSnake.enqueueDirection(Direction.LEFT);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
+                }
+                if (key == Input.KEY_RIGHT) {
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        playerSnake.setDirection(Direction.RIGHT);
+                    } else {
+                        playerSnake.enqueueDirection(Direction.RIGHT);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
+                }
+                if (key == Input.KEY_UP) {
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        playerSnake.setDirection(Direction.UP);
+                    } else {
+                        playerSnake.enqueueDirection(Direction.UP);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
+                }
+                if (key == Input.KEY_DOWN) {
+                    if (System.currentTimeMillis() - lastDirectionChange > 150) {
+                        playerSnake.setDirection(Direction.DOWN);
+                    } else {
+                        playerSnake.enqueueDirection(Direction.DOWN);
+                    }
+                    lastDirectionChange = System.currentTimeMillis();
+                }
+                if (key == Input.KEY_ENTER) {
+                    SnakeEntity main = (SnakeEntity) entities.get(0);
+                    Direction last = main.getTail().get(main.getTail().size() - 1);
+                    main.getTail().add(last);
+                }
+            }
+        });
     }
 
     @Override
     public void update(GameContainer container, int delta) throws SlickException {
         if (running) {
+
+            while (!scheduled.isEmpty()) {
+                scheduled.poll().run();
+            }
+
+            Direction oldDir = null;
+            Coords oldCoords = null;
+            if (playerSnake != null) {
+                oldDir = playerSnake.getDirection();
+                oldCoords = playerSnake.getCoords();
+            }
+
             for (Entity entity : entities) {
                 entity.update(delta);
             }
-            //SnakeEntity main = (SnakeEntity) entities.get(0);
-            //Camera camera = renderer.getCamera();
-            //camera.coords.setX(main.getX() * camera.size - camera.width / 2.0).setY(main.getY() * camera.size - camera.height / 2.0);
+
+            if (playerSnake != null) {
+
+                if (oldDir != playerSnake.getDirection()) {
+                    client.unsafe().sendPacket(new UpdateDirection(playerSnake.getEntityId(), playerSnake.getDirection(), oldCoords));
+                }
+
+                Camera camera = renderer.getCamera();
+                camera.coords.setX(playerSnake.getX() * camera.size - camera.width / 2.0).setY(playerSnake.getY() * camera.size - camera.height / 2.0);
+
+                if (nameField.getText().equals("auto")) {
+
+                    camera.coords.setX(10 * camera.size - camera.width / 2.0).setY(10 * camera.size - camera.height / 2.0);
+
+                    if (playerSnake.getCoords().getY() > 20) {
+                        playerSnake.setDirection(Direction.RIGHT);
+                    }
+                    if (playerSnake.getCoords().getX() > 20) {
+                        playerSnake.setDirection(Direction.UP);
+                    }
+                    if (playerSnake.getCoords().getY() < 0) {
+                        playerSnake.setDirection(Direction.LEFT);
+                    }
+                    if (playerSnake.getCoords().getX() < 0) {
+                        playerSnake.setDirection(Direction.DOWN);
+                    }
+                }
+            }
         }
     }
 
@@ -122,6 +214,63 @@ public class Snakes extends PacketHandler implements Game {
         if (client != null) {
             client.stop();
         }
+    }
+
+    @Override
+    public void handle(UpdateDirection packet) throws Exception {
+        scheduled.offer(() -> {
+            for (Entity entity : entities) {
+                if (entity.getEntityId() == packet.getEntityId()) {
+                    SnakeEntity snake = (SnakeEntity) entity;
+                    snake.updateDirection(packet.getDirection(), packet.getCoords());
+                    return;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void handle(SnakeMove packet) throws Exception {
+        System.out.println("snake move update");
+        scheduled.offer(() -> {
+            for (Entity entity : entities) {
+                if (entity.getEntityId() == packet.getEntityId()) {
+                    SnakeEntity snake = (SnakeEntity) entity;
+                    snake.teleport(packet.getCoords());
+                    snake.forceDirection(packet.getDirection());
+                    snake.getTail().clear();
+                    snake.getTail().addAll(packet.getTailAsList());
+                    return;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void handle(EntitySpawn packet) throws Exception {
+        System.out.println("entity spawn");
+        entities.add(packet.getEntity());
+        if (packet.getEntityType() == EntityType.SNAKE) {
+            SnakeEntity entity = (SnakeEntity) packet.getEntity();
+            if (entity.getPlayerId() == playerId) {
+                playerSnake = entity;
+            }
+        }
+    }
+
+    @Override
+    public void handle(EntityRemove packet) throws Exception {
+        entities.removeIf(entity -> entity.getEntityId() == packet.getEntityId());
+    }
+
+    @Override
+    public void handle(PlayerLeave packet) throws Exception {
+        players.remove(packet.getPlayerId());
+    }
+
+    @Override
+    public void handle(PlayerJoin packet) throws Exception {
+        players.put(packet.getPlayerId(), packet.getName());
     }
 
     @Override

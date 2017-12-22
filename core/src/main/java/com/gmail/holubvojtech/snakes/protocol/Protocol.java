@@ -13,6 +13,7 @@ public enum Protocol {
             registerPacket(0x01, Login.class);
             registerPacket(0x02, RespawnRequest.class);
             registerPacket(0x03, Chat.class);
+            registerPacket(0x04, UpdateDirection.class);
         }
     },
 
@@ -28,6 +29,8 @@ public enum Protocol {
             registerPacket(0x07, EntitySpawn.class);
             registerPacket(0x08, EntityRemove.class);
             registerPacket(0x09, ChatMessage.class);
+            //todo registerPacket(0x0a, Map.class);
+            registerPacket(0x0b, UpdateDirection.class);
         }
     };
 

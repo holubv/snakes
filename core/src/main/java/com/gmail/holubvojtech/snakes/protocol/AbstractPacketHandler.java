@@ -50,4 +50,7 @@ public class AbstractPacketHandler {
 
     public void handle(EntityRemove packet) throws Exception {
     }
+
+    public void handle(UpdateDirection packet) throws Exception {
+    }
 }

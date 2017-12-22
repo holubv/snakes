@@ -21,7 +21,7 @@ public class SnakeEntity extends Entity {
     private int lx;
     private int ly;
 
-    private Color color;
+    private Color color = new Color(0, 0, 0);
 
     private LinkedList<Direction> nextDirection = new LinkedList<>();
     private Direction lastDirection = direction;
@@ -43,9 +43,12 @@ public class SnakeEntity extends Entity {
     }
 
     @Override
-    public void update(int delta) {
+    public void update(double delta) {
         super.update(delta);
+        update0(delta, false);
+    }
 
+    private void update0(double delta, boolean forceChange) {
         double distance = speed * delta;
         coords.add(direction.getRx() * distance, direction.getRy() * distance);
 
@@ -59,18 +62,19 @@ public class SnakeEntity extends Entity {
                 changed = lx - 0.9 > coords.getX();
                 break;
             case DOWN:
-                changed = ly < coords.getBlockY();
+                changed = ly + 0.9 < coords.getY();
                 break;
             case RIGHT:
-                changed = lx < coords.getBlockX();
+                changed = lx + 0.9 < coords.getX();
                 break;
         }
 
-        if (changed) {
+        if (changed || forceChange) {
 
             if (!nextDirection.isEmpty() && nextDirection.peek() != direction) {
                 lastDirection = direction;
                 direction = nextDirection.pop();
+
                 coords.setX(Math.round(coords.getX()));
                 coords.setY(Math.round(coords.getY()));
             }
@@ -91,8 +95,10 @@ public class SnakeEntity extends Entity {
             return;
         }
 
-        tail.removeLast();
-        tail.addFirst(lastDirection.opposite());
+        if (!tail.isEmpty()) {
+            tail.removeLast();
+            tail.addFirst(lastDirection.opposite());
+        }
 
         lastDirection = direction;
     }
@@ -100,14 +106,30 @@ public class SnakeEntity extends Entity {
     @Override
     public void teleport(double x, double y) {
         super.teleport(x, y);
+        tailPivot = tailPivot.setX(x).setY(y).blockCoords();
+    }
+
+    public void updateDirection(Direction newDirection, Coords at) {
+
+        double off = Math.max(Math.abs(at.getY() - coords.getY()), Math.abs(at.getX() - coords.getX()));
+        double delta = Math.abs(off) / speed;
+
+        coords.add(direction.getRx() * -off, direction.getRy() * -off);
+
+        forceDirection(newDirection);
+        update0(delta, true);
+    }
+
+    public void forceDirection(Direction direction) {
+        this.nextDirection.clear();
+        this.nextDirection.add(direction);
     }
 
     public void setDirection(Direction direction) {
         if (direction == this.direction || direction == this.direction.opposite()) {
             return;
         }
-        this.nextDirection.clear();
-        this.nextDirection.add(direction);
+        forceDirection(direction);
     }
 
     public void enqueueDirection(Direction direction) {
@@ -138,20 +160,22 @@ public class SnakeEntity extends Entity {
         return tail;
     }
 
-    public double getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(double speed) {
-        this.speed = speed;
-    }
-
     public int getPlayerId() {
         return playerId;
     }
 
-    public void setPlayerId(int playerId) {
+    public SnakeEntity setPlayerId(int playerId) {
         this.playerId = playerId;
+        return this;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public SnakeEntity setSpeed(double speed) {
+        this.speed = speed;
+        return this;
     }
 
     public Color getColor() {

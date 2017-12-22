@@ -23,6 +23,13 @@ public class EntitySpawn extends DefinedPacket {
     public EntitySpawn() {
     }
 
+    public EntitySpawn(Entity entity) {
+        this.entityId = entity.getEntityId();
+        this.entityType = entity.getType();
+        this.coords = entity.getCoords();
+        this.entity = entity;
+    }
+
     @Override
     public void read(ByteBuf buf) {
         this.entityId = (int) buf.readUnsignedInt();
