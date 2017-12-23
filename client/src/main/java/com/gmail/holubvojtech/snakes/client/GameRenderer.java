@@ -4,9 +4,11 @@ import com.gmail.holubvojtech.snakes.AbstractRenderer;
 import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.entity.Entity;
+import com.gmail.holubvojtech.snakes.entity.FoodEntity;
 import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.SlickException;
 
 import java.util.List;
 
@@ -14,8 +16,22 @@ public class GameRenderer extends AbstractRenderer {
 
     private Camera camera;
 
-    public GameRenderer(Camera camera) {
+    private float foodScaleAni = 1;
+    private int foodScaleMod = 1;
+
+    public GameRenderer(Camera camera) throws SlickException {
         this.camera = camera;
+    }
+
+    public void update(int delta) {
+        foodScaleAni += delta * 0.0025 * foodScaleMod;
+        if (foodScaleAni > 1.25) {
+            foodScaleAni = 1.25f;
+            foodScaleMod = -1;
+        } else if (foodScaleAni < 0.8) {
+            foodScaleAni = 0.8f;
+            foodScaleMod = 1;
+        }
     }
 
     public void render(Graphics g) {
@@ -23,24 +39,18 @@ public class GameRenderer extends AbstractRenderer {
         g.setColor(Color.white);
         g.fillRect(0, 0, camera.width, camera.height);
 
-        g.setColor(Color.red);
-        for (int x = 0; x < camera.width; x += camera.size) {
-            for (int y = 0; y < camera.height; y += camera.size) {
-                g.drawRect((float) (x - camera.coords.getX()), (float) (y - camera.coords.getY()), camera.size, camera.size);
+        //render background cues
+        g.setColor(Color.lightGray);
+        float cx = (float) camera.coords.getX() % 128;
+        float cy = (float) camera.coords.getY() % 128;
 
-                if (x % 10 == 0) {
-                    g.setColor(Color.blue);
-                    g.drawString((x / camera.size) + "", (float) (x - camera.coords.getX()), 0);
-                    g.setColor(Color.red);
-                }
-                if (y % 10 == 0) {
-                    g.setColor(Color.blue);
-                    g.drawString((y / camera.size) + "", 0, (float) (y - camera.coords.getY()));
-                    g.setColor(Color.red);
-                }
+        for (int x = 0; x < camera.width + 128; x += 128) {
+            for (int y = 0; y < camera.height + 128; y += 128) {
+                g.fillRect(x - cx, y - cy, 2, 2);
             }
         }
 
+        //render entities
         List<Entity> entities = Snakes.inst.getEntities();
         for (Entity entity : entities) {
             entity.render(this, g);
@@ -56,7 +66,7 @@ public class GameRenderer extends AbstractRenderer {
         Coords c;
         //todo viewport check
 
-        g.setColor(Color.darkGray);
+        g.setColor(new Color(entity.getColor().getRGB()));
 
         double off = snakeDir.getRx() != 0 ? coords.getDecimalX() : coords.getDecimalY();
         if (off < 0) {
@@ -72,7 +82,6 @@ public class GameRenderer extends AbstractRenderer {
                 c = camera.transform(coords.blockCoords().add((1 - off) * -dir.getRx(), (1 - off) * -dir.getRy()));
             }
 
-            g.setColor(Color.darkGray);
             g.fillRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);
         }
 
@@ -84,8 +93,8 @@ public class GameRenderer extends AbstractRenderer {
 
         // debug rendering... vvv
 
-        g.setColor(Color.blue);
-        g.drawString(coords.getBlockX() + "," + coords.getBlockY(), (float) c.getX(), (float) c.getY() + 1);
+        //g.setColor(Color.blue);
+        //g.drawString(coords.getBlockX() + "," + coords.getBlockY(), (float) c.getX(), (float) c.getY() + 1);
 
         /*g.setColor(Color.green);
         coords = entity.getTailPivot();
@@ -104,6 +113,29 @@ public class GameRenderer extends AbstractRenderer {
         c = camera.transform(coords);
         g.setColor(Color.yellow);
         g.drawRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);*/
+    }
+
+    @Override
+    public void render(FoodEntity entity, Object context) {
+        Graphics g = (Graphics) context;
+
+        Coords c = camera.transform(entity.getCoords());
+        //food.draw((float) c.getX(), (float)c.getY(), camera.size, camera.size);
+        if (entity.getFoodType() == FoodEntity.Type.GROW) {
+            g.setColor(Color.green);
+        } else {
+            g.setColor(Color.red);
+        }
+
+        g.pushTransform();
+
+        float size = camera.size * 0.7f * foodScaleAni;
+        float off = (camera.size - size) / 2f;
+
+        g.rotate((float) c.getX() + camera.size / 2, (float) c.getY() + camera.size / 2, 45);
+        g.fillRect((float) c.getX() + off, (float) c.getY() + off, size, size);
+
+        g.popTransform();
     }
 
     public Camera getCamera() {

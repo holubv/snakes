@@ -1,8 +1,11 @@
 package com.gmail.holubvojtech.snakes.server;
 
+import com.gmail.holubvojtech.snakes.Color;
 import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
+import com.gmail.holubvojtech.snakes.Utils;
 import com.gmail.holubvojtech.snakes.entity.Entity;
+import com.gmail.holubvojtech.snakes.entity.FoodEntity;
 import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.HandlerBoss;
 import com.gmail.holubvojtech.snakes.netty.PipelineUtils;
@@ -25,6 +28,27 @@ public class SnakesServer {
     private static final int TARGET_TPS = 60;
     private static final long NANOS_PER_TICK = 1000_000_000L / TARGET_TPS;
     private static final int SEND_MOVES_EVERY_X_TICK = 500;
+
+    private static final Color[] SNAKE_COLORS = new Color[]{
+            new Color(0xF44336),
+            new Color(0xE91E63),
+            new Color(0x9C27B0),
+            new Color(0x673AB7),
+            new Color(0x3F51B5),
+            new Color(0x2196F3),
+            new Color(0x03A9F4),
+            new Color(0x00BCD4),
+            new Color(0x009688),
+            new Color(0x4CAF50),
+            new Color(0x8BC34A),
+            new Color(0xCDDC39),
+            new Color(0xFFEB3B),
+            new Color(0xFFC107),
+            new Color(0xFF9800),
+            new Color(0xFF5722),
+            new Color(0x795548),
+            new Color(0x607D8B)
+    };
 
     private boolean running = false;
     private int port;
@@ -169,6 +193,9 @@ public class SnakesServer {
     public void onPlayerConnected(ClientConnection connection) {
         schedule(() -> {
 
+            spawnEntity(new FoodEntity(new Coords(1, 1), FoodEntity.Type.GROW));
+            spawnEntity(new FoodEntity(new Coords(1, 5), FoodEntity.Type.SHRINK));
+
             for (Entity entity : entities) {
                 connection.unsafe().sendPacket(new EntitySpawn(entity));
             }
@@ -176,6 +203,11 @@ public class SnakesServer {
             SnakeEntity entity = new SnakeEntity(new Coords());
             entity.setPlayerId(connection.getPlayerId());
             entity.getTail().add(Direction.UP);
+            entity.getTail().add(Direction.UP);
+            entity.getTail().add(Direction.UP);
+            entity.getTail().add(Direction.UP);
+            entity.getTail().add(Direction.UP);
+            entity.setColor(Utils.randomValue(SNAKE_COLORS));
             connection.setSnakeId(entity.getEntityId());
             spawnEntity(entity);
             broadcast(new SnakeMove(entity));

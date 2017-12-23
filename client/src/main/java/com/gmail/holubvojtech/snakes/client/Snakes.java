@@ -76,6 +76,21 @@ public class Snakes extends PacketHandler implements Game {
 
         renderer = new GameRenderer(new Camera(new Coords(), container.getWidth(), container.getHeight()));
 
+        container.getInput().addMouseListener(new InputAdapter() {
+            @Override
+            public void mouseWheelMoved(int change) {
+                if (!running) {
+                    return;
+                }
+                Camera camera = renderer.getCamera();
+                if (change > 0 && camera.size < 32) {
+                    camera.size += 2;
+                } else if (change < 0 && camera.size > 4) {
+                    camera.size -= 2;
+                }
+            }
+        });
+
         container.getInput().addKeyListener(new InputAdapter() {
             @Override
             public void keyPressed(int key, char c) {
@@ -111,11 +126,6 @@ public class Snakes extends PacketHandler implements Game {
                     }
                     lastDirectionChange = System.currentTimeMillis();
                 }
-                if (key == Input.KEY_ENTER) {
-                    SnakeEntity main = (SnakeEntity) entities.get(0);
-                    Direction last = main.getTail().get(main.getTail().size() - 1);
-                    main.getTail().add(last);
-                }
             }
         });
     }
@@ -150,7 +160,7 @@ public class Snakes extends PacketHandler implements Game {
 
                 if (nameField.getText().equals("auto")) {
 
-                    camera.coords.setX(10 * camera.size - camera.width / 2.0).setY(10 * camera.size - camera.height / 2.0);
+                    //camera.coords.setX(10 * camera.size - camera.width / 2.0).setY(10 * camera.size - camera.height / 2.0);
 
                     if (playerSnake.getCoords().getY() > 20) {
                         playerSnake.setDirection(Direction.RIGHT);
@@ -166,6 +176,8 @@ public class Snakes extends PacketHandler implements Game {
                     }
                 }
             }
+
+            renderer.update(delta);
         }
     }
 
@@ -184,6 +196,10 @@ public class Snakes extends PacketHandler implements Game {
     @Override
     public boolean closeRequested() {
         return true;
+    }
+
+    public void schedule(Runnable r) {
+        scheduled.offer(r);
     }
 
     public void connect(String ip, int port) {
@@ -218,7 +234,7 @@ public class Snakes extends PacketHandler implements Game {
 
     @Override
     public void handle(UpdateDirection packet) throws Exception {
-        scheduled.offer(() -> {
+        schedule(() -> {
             for (Entity entity : entities) {
                 if (entity.getEntityId() == packet.getEntityId()) {
                     SnakeEntity snake = (SnakeEntity) entity;
@@ -232,7 +248,7 @@ public class Snakes extends PacketHandler implements Game {
     @Override
     public void handle(SnakeMove packet) throws Exception {
         System.out.println("snake move update");
-        scheduled.offer(() -> {
+        schedule(() -> {
             for (Entity entity : entities) {
                 if (entity.getEntityId() == packet.getEntityId()) {
                     SnakeEntity snake = (SnakeEntity) entity;
@@ -249,18 +265,20 @@ public class Snakes extends PacketHandler implements Game {
     @Override
     public void handle(EntitySpawn packet) throws Exception {
         System.out.println("entity spawn");
-        entities.add(packet.getEntity());
-        if (packet.getEntityType() == EntityType.SNAKE) {
-            SnakeEntity entity = (SnakeEntity) packet.getEntity();
-            if (entity.getPlayerId() == playerId) {
-                playerSnake = entity;
+        schedule(() -> {
+            entities.add(packet.getEntity());
+            if (packet.getEntityType() == EntityType.SNAKE) {
+                SnakeEntity entity = (SnakeEntity) packet.getEntity();
+                if (entity.getPlayerId() == playerId) {
+                    playerSnake = entity;
+                }
             }
-        }
+        });
     }
 
     @Override
     public void handle(EntityRemove packet) throws Exception {
-        entities.removeIf(entity -> entity.getEntityId() == packet.getEntityId());
+        schedule(() -> entities.removeIf(entity -> entity.getEntityId() == packet.getEntityId()));
     }
 
     @Override

@@ -52,7 +52,6 @@ public class ClientConnection extends PacketHandler implements Connection {
         this.server.schedule(() -> {
             SnakeEntity entity = (SnakeEntity) server.getEntity(snakeId);
             if (entity != null) {
-                System.out.println("@" + packet.getCoords());
                 entity.updateDirection(packet.getDirection(), packet.getCoords());
             }
         });

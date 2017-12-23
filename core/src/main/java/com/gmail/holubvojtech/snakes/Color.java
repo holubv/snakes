@@ -12,6 +12,12 @@ public class Color {
         this.b = (byte) b;
     }
 
+    public Color(int rgb) {
+        r = (byte) ((rgb >> 16) & 0xFF);
+        g = (byte) ((rgb >> 8) & 0xFF);
+        b = (byte) (rgb & 0xFF);
+    }
+
     public byte getR() {
         return r;
     }
@@ -22,5 +28,12 @@ public class Color {
 
     public byte getB() {
         return b;
+    }
+
+    public int getRGB() {
+        int rgb = r;
+        rgb = (rgb << 8) + g;
+        rgb = (rgb << 8) + b;
+        return rgb;
     }
 }
