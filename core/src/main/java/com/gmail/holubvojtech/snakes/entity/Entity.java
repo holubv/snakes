@@ -48,6 +48,7 @@ public abstract class Entity {
                     }
                 }
             }
+            return false;
         }
         if (e1 instanceof CompoundAABBEntity) {
             return CompoundAABBEntity.intersects((CompoundAABBEntity) e1, aabb2);

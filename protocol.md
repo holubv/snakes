@@ -38,13 +38,11 @@ Client bound (C <- S)
 |----|----|----|
 | Player id | short | |
 
-**[C 0x05] Snake move**
+**[C 0x05] Snake tail**
 
 | name | field type | description |
 |----|----|----|
 | Entity id | int | |
-| Head X | signed float | |
-| Head Y | signed float | |
 | Direction | byte | |
 | Tail length | short | |
 | Tail relative position | byte[] | 4 tails are 1 byte (00-00-00-00) |

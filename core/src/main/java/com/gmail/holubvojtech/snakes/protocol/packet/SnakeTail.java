@@ -1,6 +1,5 @@
 package com.gmail.holubvojtech.snakes.protocol.packet;
 
-import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.protocol.AbstractPacketHandler;
@@ -13,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Clientbound
-public class SnakeMove extends DefinedPacket {
+public class SnakeTail extends DefinedPacket {
 
     private static final byte[] DIR_MASK = new byte[]{
             0b00, //up
@@ -23,25 +22,22 @@ public class SnakeMove extends DefinedPacket {
     };
 
     private int entityId;
-    private Coords coords;
     private Direction direction;
     private Direction[] tail;
 
-    public SnakeMove() {
+    public SnakeTail() {
     }
 
-    public SnakeMove(SnakeEntity entity) {
+    public SnakeTail(SnakeEntity entity) {
         this.entityId = entity.getEntityId();
-        this.coords = entity.getCoords();
         this.direction = entity.getDirection();
 
         List<Direction> tail = entity.getTail();
         this.tail = tail.toArray(new Direction[tail.size()]);
     }
 
-    public SnakeMove(int entityId, Coords coords, Direction direction, Collection<Direction> tail) {
+    public SnakeTail(int entityId, Direction direction, Collection<Direction> tail) {
         this.entityId = entityId;
-        this.coords = coords.copy();
         this.direction = direction;
         this.tail = tail.toArray(new Direction[tail.size()]);
     }
@@ -99,7 +95,6 @@ public class SnakeMove extends DefinedPacket {
     @Override
     public void read(ByteBuf buf) {
         this.entityId = (int) buf.readUnsignedInt();
-        this.coords = readCoords(buf);
         this.direction = Direction.values()[buf.readUnsignedByte()];
         this.tail = readSnakeTail(buf);
     }
@@ -107,7 +102,6 @@ public class SnakeMove extends DefinedPacket {
     @Override
     public void write(ByteBuf buf) {
         buf.writeInt(entityId);
-        writeCoords(coords, buf);
         buf.writeByte(direction.ordinal());
         writeSnakeTail(buf, tail);
     }
@@ -119,10 +113,6 @@ public class SnakeMove extends DefinedPacket {
 
     public int getEntityId() {
         return entityId;
-    }
-
-    public Coords getCoords() {
-        return coords;
     }
 
     public Direction getDirection() {
@@ -139,9 +129,8 @@ public class SnakeMove extends DefinedPacket {
 
     @Override
     public String toString() {
-        return "SnakeMove{" +
+        return "SnakeTail{" +
                 "entityId=" + entityId +
-                ", coords=" + coords +
                 ", direction=" + direction +
                 ", tail=" + Arrays.toString(tail) +
                 '}';

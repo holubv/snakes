@@ -24,13 +24,14 @@ public enum Protocol {
             registerPacket(0x02, LoginSuccess.class);
             registerPacket(0x03, PlayerJoin.class);
             registerPacket(0x04, PlayerLeave.class);
-            registerPacket(0x05, SnakeMove.class);
+            registerPacket(0x05, SnakeTail.class);
             //todo registerPacket(0x06, PlayerDeath.class);
             registerPacket(0x07, EntitySpawn.class);
             registerPacket(0x08, EntityRemove.class);
             registerPacket(0x09, ChatMessage.class);
             //todo registerPacket(0x0a, Map.class);
             registerPacket(0x0b, UpdateDirection.class);
+            registerPacket(0x0c, SnakeTailSizeChange.class);
         }
     };
 

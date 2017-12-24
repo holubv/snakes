@@ -1,7 +1,6 @@
 package com.gmail.holubvojtech.snakes.client;
 
 import com.gmail.holubvojtech.snakes.AbstractRenderer;
-import com.gmail.holubvojtech.snakes.AxisAlignedBB;
 import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.entity.Entity;
@@ -56,7 +55,7 @@ public class GameRenderer extends AbstractRenderer {
         for (Entity entity : entities) {
             entity.render(this, g);
 
-            g.setColor(Color.pink);
+            /*g.setColor(Color.pink);
             AxisAlignedBB bounds = entity.getBoundingBox();
             if (bounds != null) {
                 Coords c = camera.transform(bounds.getCoords());
@@ -66,8 +65,7 @@ public class GameRenderer extends AbstractRenderer {
                         (float) (camera.size * bounds.getWidth()),
                         (float) (camera.size * bounds.getHeight())
                 );
-            }
-
+            }*/
         }
     }
 
@@ -126,14 +124,14 @@ public class GameRenderer extends AbstractRenderer {
         /*coords = entity.getTailPivot();
         c = camera.transform(coords);
         g.setColor(Color.yellow);
-        g.drawRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);*/
+        g.drawRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);
 
-        /*coords = entity.getCoords().blockCoords();
-        c = camera.transform(coords);
+        coords = entity.getCoords();
+        c = camera.transform(coords.blockCoords());
         g.setColor(Color.blue);
         g.drawRect((float) (c.getX()), (float) (c.getY()), camera.size, camera.size);*/
 
-        g.setColor(Color.red);
+        /*g.setColor(Color.red);
         for (AxisAlignedBB aabb : entity.getBoundingBoxes()) {
             c = camera.transform(aabb.getCoords());
             g.drawRect(
@@ -142,7 +140,7 @@ public class GameRenderer extends AbstractRenderer {
                     (float) (camera.size * aabb.getWidth()),
                     (float) (camera.size * aabb.getHeight())
             );
-        }
+        }*/
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.Utils;
 import com.gmail.holubvojtech.snakes.entity.Entity;
+import com.gmail.holubvojtech.snakes.entity.EntityType;
 import com.gmail.holubvojtech.snakes.entity.FoodEntity;
 import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.HandlerBoss;
@@ -22,12 +23,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class SnakesServer {
 
     private static final int TARGET_TPS = 60;
     private static final long NANOS_PER_TICK = 1000_000_000L / TARGET_TPS;
-    private static final int SEND_MOVES_EVERY_X_TICK = 500;
 
     private static final Color[] SNAKE_COLORS = new Color[]{
             new Color(0xF44336),
@@ -154,7 +156,6 @@ public class SnakesServer {
             scheduled.poll().run();
         }
 
-        boolean sendMoves = currentTick % SEND_MOVES_EVERY_X_TICK == 0;
         Iterator<Entity> it = entities.iterator();
         while (it.hasNext()) {
             Entity entity = it.next();
@@ -165,9 +166,37 @@ public class SnakesServer {
             }
 
             entity.update(delta);
-            if (sendMoves && entity instanceof SnakeEntity) {
-                broadcast(new SnakeMove((SnakeEntity) entity));
+        }
+
+        //this is very basic collision system
+        //problems can occur when server/game lags
+        //or when entity moves very fast
+        for (Entity e1 : entities) {
+            for (Entity e2 : entities) {
+                if (!e1.isRemoved() && !e2.isRemoved() && Entity.collides(e1, e2)) {
+                    if (e1 instanceof SnakeEntity && e2.getType() == EntityType.FOOD) {
+                        e2.remove();
+                        SnakeEntity snake = (SnakeEntity) e1;
+                        FoodEntity food = (FoodEntity) e2;
+                        if (food.getFoodType() == FoodEntity.Type.GROW) {
+                            snake.grow();
+                            broadcast(new SnakeTailSizeChange((SnakeEntity) e1, 1));
+                        } else {
+                            snake.shrink();
+                            broadcast(new SnakeTailSizeChange((SnakeEntity) e1, -1));
+                        }
+
+                        System.out.println("snake ate food");
+                    }
+                    if (e2 instanceof SnakeEntity && e1 instanceof SnakeEntity) {
+                        System.out.println("### COLLISION ###");
+                    }
+                }
             }
+        }
+
+        if (currentTick % 100 == 0) {
+            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-50, 50), Utils.randomInt(-50, 50)), FoodEntity.Type.GROW));
         }
     }
 
@@ -183,6 +212,9 @@ public class SnakesServer {
     public Entity spawnEntity(Entity entity) {
         entities.add(entity);
         broadcast(new EntitySpawn(entity));
+        if (entity instanceof SnakeEntity) {
+            broadcast(new SnakeTail((SnakeEntity) entity));
+        }
         return entity;
     }
 
@@ -193,11 +225,18 @@ public class SnakesServer {
         }
     }
 
+    public ClientConnection getClientBySnake(int snakeId) {
+        return getClient(client -> client.getSnakeId() == snakeId);
+    }
+
     public void onPlayerConnected(ClientConnection connection) {
         schedule(() -> {
 
             for (Entity entity : entities) {
                 connection.unsafe().sendPacket(new EntitySpawn(entity));
+                if (entity instanceof SnakeEntity) {
+                    connection.unsafe().sendPacket(new SnakeTail((SnakeEntity) entity));
+                }
             }
 
             SnakeEntity entity = new SnakeEntity(new Coords());
@@ -210,7 +249,6 @@ public class SnakesServer {
             entity.setColor(Utils.randomValue(SNAKE_COLORS));
             connection.setSnakeId(entity.getEntityId());
             spawnEntity(entity);
-            broadcast(new SnakeMove(entity));
         });
         broadcast(new PlayerJoin(connection.getPlayerId(), connection.getUsername()), connection);
     }
@@ -299,6 +337,31 @@ public class SnakesServer {
         } finally {
             connectionLock.readLock().unlock();
         }
+    }
+
+    public void forClient(Consumer<ClientConnection> callback) {
+        connectionLock.readLock().lock();
+        try {
+            for (ClientConnection connection : connections) {
+                callback.accept(connection);
+            }
+        } finally {
+            connectionLock.readLock().unlock();
+        }
+    }
+
+    public ClientConnection getClient(Function<ClientConnection, Boolean> accept) {
+        connectionLock.readLock().lock();
+        try {
+            for (ClientConnection connection : connections) {
+                if (accept.apply(connection)) {
+                    return connection;
+                }
+            }
+        } finally {
+            connectionLock.readLock().unlock();
+        }
+        return null;
     }
 
     public void __addConnection(ClientConnection connection) {

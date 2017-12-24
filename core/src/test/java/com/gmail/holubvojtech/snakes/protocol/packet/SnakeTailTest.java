@@ -1,6 +1,5 @@
 package com.gmail.holubvojtech.snakes.protocol.packet;
 
-import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -12,7 +11,7 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
-class SnakeMoveTest {
+class SnakeTailTest {
 
     @RepeatedTest(5)
     void tailEncodeTest() {
@@ -31,9 +30,9 @@ class SnakeMoveTest {
         //System.out.println("------ reading ------");
 
         ByteBuf buf = Unpooled.buffer();
-        new SnakeMove(5, new Coords(-4, 1), Direction.UP, tail).write(buf);
+        new SnakeTail(5, Direction.UP, tail).write(buf);
 
-        SnakeMove received = new SnakeMove();
+        SnakeTail received = new SnakeTail();
         received.read(buf);
 
         List<Direction> nTail = received.getTailAsList();

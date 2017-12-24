@@ -42,7 +42,7 @@ public class AbstractPacketHandler {
     public void handle(PlayerJoin packet) throws Exception {
     }
 
-    public void handle(SnakeMove packet) throws Exception {
+    public void handle(SnakeTail packet) throws Exception {
     }
 
     public void handle(EntitySpawn packet) throws Exception {
@@ -52,5 +52,8 @@ public class AbstractPacketHandler {
     }
 
     public void handle(UpdateDirection packet) throws Exception {
+    }
+
+    public void handle(SnakeTailSizeChange packet) throws Exception {
     }
 }

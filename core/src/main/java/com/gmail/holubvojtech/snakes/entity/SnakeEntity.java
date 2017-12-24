@@ -17,9 +17,11 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
     private int playerId;
 
-    private double speed = 0.0015;
+    private double speed = 0.0085;
     private int lx;
     private int ly;
+    private double lastOff = 0;
+    private boolean afterForceUpdate = false;
 
     private Color color = new Color(0, 0, 0);
 
@@ -57,20 +59,20 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
         switch (lastDirection) {
             case UP:
-                changed = ly - 0.9 > coords.getY();
+                changed = ly - 0.9 > coords.getBlockY();
                 break;
             case LEFT:
-                changed = lx - 0.9 > coords.getX();
+                changed = lx - 0.9 > coords.getBlockX();
                 break;
             case DOWN:
-                changed = ly + 0.9 < coords.getY();
+                changed = ly < coords.getBlockY();
                 break;
             case RIGHT:
-                changed = lx + 0.9 < coords.getX();
+                changed = lx < coords.getBlockX();
                 break;
         }
 
-        if (changed || forceChange) {
+        if (changed) {
 
             if (!nextDirection.isEmpty() && nextDirection.peek() != direction) {
                 lastDirection = direction;
@@ -82,6 +84,11 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
             lx = coords.getBlockX();
             ly = coords.getBlockY();
+        }
+
+        if (forceChange) {
+            afterForceUpdate = true;
+            return;
         }
 
         lastPivot = tailPivot.copy();
@@ -96,12 +103,86 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
             return;
         }
 
+        if (afterForceUpdate) {
+            afterForceUpdate = false;
+            if (direction.isNegative()) {
+                updateAABB();
+                return;
+            }
+        }
+
         if (!tail.isEmpty()) {
             tail.removeLast();
             tail.addFirst(lastDirection.opposite());
         }
 
+        updateAABB();
+        lastDirection = direction;
+    }
 
+    @Override
+    public void teleport(double x, double y) {
+        super.teleport(x, y);
+    }
+
+    public void grow() {
+        if (tail.isEmpty()) {
+            tail.add(direction.opposite());
+            return;
+        }
+        Direction last = tail.getLast();
+        tail.add(last);
+    }
+
+    public void shrink() {
+        if (!tail.isEmpty()) {
+            tail.removeLast();
+        }
+    }
+
+    public void updateDirection(Direction newDirection, Coords at) {
+
+        double dx = coords.getX() - at.getX();
+        double dy = coords.getY() - at.getY();
+
+        if (Math.abs(Math.round(dx)) > 0 && Math.abs(Math.round(dy)) > 0) {
+            updateDirection(newDirection, new Coords(coords.getX(), at.getY()));
+            updateDirection(newDirection, new Coords(at.getX(), coords.getY()));
+            return;
+        }
+
+        double off = Math.max(Math.abs(dx), Math.abs(dy)) - (lastOff / 2);
+        if (off <= 0) {
+            return;
+        }
+        double delta = Math.abs(off) / speed;
+        lastOff = off;
+
+        coords.add(direction.getRx() * -off, direction.getRy() * -off);
+
+        lastDirection = direction;
+        direction = newDirection;
+        update0(delta, true);
+
+        if (direction == Direction.UP || direction == Direction.DOWN) {
+            coords.setX(Math.round(coords.getX()));
+        } else {
+            coords.setY(Math.round(coords.getY()));
+        }
+
+        if (direction.isNegative() && lastDirection == direction) {
+            tailPivot.setX(coords.getBlockX() - direction.getRx()).setY(coords.getBlockY() - direction.getRy());
+        } else {
+            tailPivot.setX(coords.getBlockX()).setY(coords.getBlockY());
+        }
+
+        updateAABB();
+        lastDirection = direction;
+
+        forceDirection(newDirection);
+    }
+
+    private void updateAABB() {
         boundingBox.setCoords(coords.blockCoords()).setWidth(0).setHeight(0);
         collisionBoxes.clear();
 
@@ -129,25 +210,6 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
         }
         aabb.grow(1, 1);
         boundingBox.grow(1, 1);
-
-        lastDirection = direction;
-    }
-
-    @Override
-    public void teleport(double x, double y) {
-        super.teleport(x, y);
-        tailPivot = tailPivot.setX(x).setY(y).blockCoords();
-    }
-
-    public void updateDirection(Direction newDirection, Coords at) {
-
-        double off = Math.max(Math.abs(at.getY() - coords.getY()), Math.abs(at.getX() - coords.getX()));
-        double delta = Math.abs(off) / speed;
-
-        coords.add(direction.getRx() * -off, direction.getRy() * -off);
-
-        forceDirection(newDirection);
-        update0(delta, true);
     }
 
     public void forceDirection(Direction direction) {

@@ -22,4 +22,8 @@ public class Utils {
     public static <T> T randomValue(T[] arr) {
         return arr[RANDOM.nextInt(arr.length)];
     }
+
+    public static int randomInt(int min, int max) {
+        return RANDOM.nextInt(max - min) + min;
+    }
 }

@@ -15,10 +15,7 @@ import org.newdawn.slick.util.InputAdapter;
 import org.newdawn.slick.util.ResourceLoader;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -145,14 +142,38 @@ public class Snakes extends PacketHandler implements Game {
                 oldCoords = playerSnake.getCoords();
             }
 
-            for (Entity entity : entities) {
+            Iterator<Entity> it = entities.iterator();
+            while (it.hasNext()) {
+                Entity entity = it.next();
+                if (entity.isRemoved()) {
+                    it.remove();
+
+                    if (playerSnake != null && entity.getEntityId() == playerSnake.getEntityId()) {
+                        playerSnake = null;
+                    }
+                    continue;
+                }
                 entity.update(delta);
             }
 
+            //this is very basic collision system
+            //problems can occur when server/game lags
+            //or when entity moves very fast
             for (Entity e1 : entities) {
                 for (Entity e2 : entities) {
-                    if (Entity.collides(e1, e2)) {
-                        System.out.println(e1.getType() + " with " + e2.getType());
+                    if (!e1.isRemoved() && !e2.isRemoved() && Entity.collides(e1, e2)) {
+                        //System.out.println(e1.getType() + " with " + e2.getType());
+
+                        if (e1 instanceof SnakeEntity && e2.getType() == EntityType.FOOD) {
+                            /*e2.remove();
+                            SnakeEntity snake = (SnakeEntity) e1;
+                            FoodEntity food = (FoodEntity) e2;
+                            if (food.getFoodType() == FoodEntity.Type.GROW) {
+                                snake.grow();
+                            } else {
+                                snake.shrink();
+                            }*/
+                        }
                     }
                 }
             }
@@ -168,7 +189,7 @@ public class Snakes extends PacketHandler implements Game {
 
                 if (nameField.getText().equals("auto")) {
 
-                    //camera.coords.setX(10 * camera.size - camera.width / 2.0).setY(10 * camera.size - camera.height / 2.0);
+                    camera.coords.setX(10 * camera.size - camera.width / 2.0).setY(10 * camera.size - camera.height / 2.0);
 
                     if (playerSnake.getCoords().getY() > 20) {
                         playerSnake.setDirection(Direction.RIGHT);
@@ -254,13 +275,28 @@ public class Snakes extends PacketHandler implements Game {
     }
 
     @Override
-    public void handle(SnakeMove packet) throws Exception {
-        System.out.println("snake move update");
+    public void handle(SnakeTailSizeChange packet) throws Exception {
         schedule(() -> {
             for (Entity entity : entities) {
                 if (entity.getEntityId() == packet.getEntityId()) {
                     SnakeEntity snake = (SnakeEntity) entity;
-                    snake.teleport(packet.getCoords());
+                    if (packet.getMod() > 0) {
+                        snake.grow();
+                    } else if (packet.getMod() < 0) {
+                        snake.shrink();
+                    }
+                    return;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void handle(SnakeTail packet) throws Exception {
+        schedule(() -> {
+            for (Entity entity : entities) {
+                if (entity.getEntityId() == packet.getEntityId()) {
+                    SnakeEntity snake = (SnakeEntity) entity;
                     snake.forceDirection(packet.getDirection());
                     snake.getTail().clear();
                     snake.getTail().addAll(packet.getTailAsList());
@@ -286,7 +322,14 @@ public class Snakes extends PacketHandler implements Game {
 
     @Override
     public void handle(EntityRemove packet) throws Exception {
-        schedule(() -> entities.removeIf(entity -> entity.getEntityId() == packet.getEntityId()));
+        schedule(() -> {
+            for (Entity entity : entities) {
+                if (entity.getEntityId() == packet.getEntityId()) {
+                    entity.remove();
+                    return;
+                }
+            }
+        });
     }
 
     @Override
