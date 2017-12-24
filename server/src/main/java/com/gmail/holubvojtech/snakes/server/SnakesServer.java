@@ -79,9 +79,6 @@ public class SnakesServer {
 
         running = true;
 
-        entities.add(new FoodEntity(new Coords(1, 1), FoodEntity.Type.GROW));
-        entities.add(new FoodEntity(new Coords(1, 5), FoodEntity.Type.SHRINK));
-
         tickThread = new Thread(() -> {
             try {
 
@@ -196,7 +193,7 @@ public class SnakesServer {
         }
 
         if (currentTick % 100 == 0) {
-            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-50, 50), Utils.randomInt(-50, 50)), FoodEntity.Type.GROW));
+            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-50, 50), Utils.randomInt(-50, 50))));
         }
     }
 

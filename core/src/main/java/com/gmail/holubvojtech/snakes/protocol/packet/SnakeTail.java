@@ -22,7 +22,6 @@ public class SnakeTail extends DefinedPacket {
     };
 
     private int entityId;
-    private Direction direction;
     private Direction[] tail;
 
     public SnakeTail() {
@@ -30,7 +29,6 @@ public class SnakeTail extends DefinedPacket {
 
     public SnakeTail(SnakeEntity entity) {
         this.entityId = entity.getEntityId();
-        this.direction = entity.getDirection();
 
         List<Direction> tail = entity.getTail();
         this.tail = tail.toArray(new Direction[tail.size()]);
@@ -38,7 +36,6 @@ public class SnakeTail extends DefinedPacket {
 
     public SnakeTail(int entityId, Direction direction, Collection<Direction> tail) {
         this.entityId = entityId;
-        this.direction = direction;
         this.tail = tail.toArray(new Direction[tail.size()]);
     }
 
@@ -95,14 +92,12 @@ public class SnakeTail extends DefinedPacket {
     @Override
     public void read(ByteBuf buf) {
         this.entityId = (int) buf.readUnsignedInt();
-        this.direction = Direction.values()[buf.readUnsignedByte()];
         this.tail = readSnakeTail(buf);
     }
 
     @Override
     public void write(ByteBuf buf) {
         buf.writeInt(entityId);
-        buf.writeByte(direction.ordinal());
         writeSnakeTail(buf, tail);
     }
 
@@ -115,9 +110,6 @@ public class SnakeTail extends DefinedPacket {
         return entityId;
     }
 
-    public Direction getDirection() {
-        return direction;
-    }
 
     public Direction[] getTail() {
         return tail;
@@ -131,7 +123,6 @@ public class SnakeTail extends DefinedPacket {
     public String toString() {
         return "SnakeTail{" +
                 "entityId=" + entityId +
-                ", direction=" + direction +
                 ", tail=" + Arrays.toString(tail) +
                 '}';
     }

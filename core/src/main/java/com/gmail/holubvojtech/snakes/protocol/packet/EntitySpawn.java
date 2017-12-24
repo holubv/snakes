@@ -1,6 +1,8 @@
 package com.gmail.holubvojtech.snakes.protocol.packet;
 
+import com.gmail.holubvojtech.snakes.Color;
 import com.gmail.holubvojtech.snakes.Coords;
+import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.entity.Entity;
 import com.gmail.holubvojtech.snakes.entity.EntityType;
 import com.gmail.holubvojtech.snakes.entity.FoodEntity;
@@ -18,6 +20,7 @@ public class EntitySpawn extends DefinedPacket {
     private EntityType entityType;
     private Coords coords;
 
+    private Metadata metadata;
     private Entity entity;
 
     public EntitySpawn() {
@@ -27,7 +30,12 @@ public class EntitySpawn extends DefinedPacket {
         this.entityId = entity.getEntityId();
         this.entityType = entity.getType();
         this.coords = entity.getCoords();
-        this.entity = entity;
+
+        if (entity.getType() == EntityType.SNAKE) {
+            metadata = new SnakeMetadata((SnakeEntity) entity);
+        } else if (entity.getType() == EntityType.FOOD) {
+            metadata = new FoodMetadata((FoodEntity) entity);
+        }
     }
 
     @Override
@@ -40,17 +48,18 @@ public class EntitySpawn extends DefinedPacket {
 
         //metadata
         if (entityType == EntityType.SNAKE) {
-
-            SnakeEntity entity = new SnakeEntity(entityId, coords);
-            entity.setPlayerId(buf.readUnsignedShort());
-            entity.setSpeed(buf.readDouble());
-            entity.setColor(readColor(buf));
-            this.entity = entity;
+            entity = new SnakeEntity(entityId, coords);
+            SnakeMetadata meta = new SnakeMetadata();
+            meta.read(buf);
+            meta.apply(entity);
             return;
         }
 
         if (entityType == EntityType.FOOD) {
-            this.entity = new FoodEntity(entityId, coords, FoodEntity.Type.values()[buf.readUnsignedByte()]);
+            entity = new FoodEntity(entityId, coords);
+            FoodMetadata meta = new FoodMetadata();
+            meta.read(buf);
+            meta.apply(entity);
             return;
         }
 
@@ -64,25 +73,11 @@ public class EntitySpawn extends DefinedPacket {
         writeCoords(coords, buf);
 
         //todo better metadata handling
-
         //metadata
-        if (entityType == EntityType.SNAKE) {
-
-            SnakeEntity entity = (SnakeEntity) this.entity;
-            buf.writeShort(entity.getPlayerId());
-            buf.writeDouble(entity.getSpeed());
-            writeColor(entity.getColor(), buf);
-            return;
+        if (metadata == null) {
+            throw new EncoderException("unsupported entity type");
         }
-
-        if (entityType == EntityType.FOOD) {
-
-            FoodEntity entity = (FoodEntity) this.entity;
-            buf.writeByte(entity.getFoodType().ordinal());
-            return;
-        }
-
-        throw new EncoderException("unsupported entity type");
+        metadata.write(buf);
     }
 
     @Override
@@ -114,5 +109,84 @@ public class EntitySpawn extends DefinedPacket {
                 ", coords=" + coords +
                 ", entity=" + entity +
                 '}';
+    }
+
+    private interface Metadata {
+        void read(ByteBuf buf);
+
+        void write(ByteBuf buf);
+
+        void apply(Entity entity);
+    }
+
+    private static class SnakeMetadata implements Metadata {
+
+        private int playerId;
+        private Direction direction;
+        private double speed;
+        private Color color;
+
+        public SnakeMetadata() {
+        }
+
+        public SnakeMetadata(SnakeEntity entity) {
+            playerId = entity.getPlayerId();
+            direction = entity.getDirection();
+            speed = entity.getSpeed();
+            color = entity.getColor();
+        }
+
+        @Override
+        public void read(ByteBuf buf) {
+            playerId = buf.readUnsignedShort();
+            direction = Direction.values()[buf.readUnsignedByte()];
+            speed = buf.readDouble();
+            color = readColor(buf);
+        }
+
+        @Override
+        public void write(ByteBuf buf) {
+            buf.writeShort(playerId);
+            buf.writeByte(direction.ordinal());
+            buf.writeDouble(speed);
+            writeColor(color, buf);
+        }
+
+        @Override
+        public void apply(Entity entity) {
+            SnakeEntity snake = (SnakeEntity) entity;
+            snake.setPlayerId(playerId);
+            snake.__instantGigaMegaChangeDirectionWithoutWaitingForAnything(direction);
+            snake.setSpeed(speed);
+            snake.setColor(color);
+        }
+    }
+
+    private static class FoodMetadata implements Metadata {
+
+        private FoodEntity.Type foodType;
+
+        public FoodMetadata() {
+        }
+
+        public FoodMetadata(FoodEntity entity) {
+            foodType = entity.getFoodType();
+        }
+
+        @Override
+        public void read(ByteBuf buf) {
+            foodType = FoodEntity.Type.values()[buf.readUnsignedByte()];
+        }
+
+        @Override
+        public void write(ByteBuf buf) {
+            buf.writeByte(foodType.ordinal());
+        }
+
+        @Override
+        public void apply(Entity entity) {
+            FoodEntity food = (FoodEntity) entity;
+            food.setType(foodType);
+        }
     }
 }

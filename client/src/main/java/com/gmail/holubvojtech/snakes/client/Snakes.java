@@ -30,6 +30,7 @@ public class Snakes extends PacketHandler implements Game {
     private Gui gui;
     private boolean showFps = true;
 
+    private GameOverlay overlay;
     private InputField nameField;
 
     private boolean running;
@@ -69,6 +70,7 @@ public class Snakes extends PacketHandler implements Game {
         this.nameField = mm.getNameField();
         gui.savePanel("main", mm);
         gui.savePanel("connect", new ConnectMenu(container));
+        gui.savePanel("overlay", overlay = new GameOverlay(container));
         gui.setRoot("main");
 
         renderer = new GameRenderer(new Camera(new Coords(), container.getWidth(), container.getHeight()));
@@ -123,6 +125,9 @@ public class Snakes extends PacketHandler implements Game {
                     }
                     lastDirectionChange = System.currentTimeMillis();
                 }
+                if (key == Input.KEY_T) {
+                    overlay.setChatVisible(!overlay.isChatVisible());
+                }
             }
         });
     }
@@ -169,7 +174,7 @@ public class Snakes extends PacketHandler implements Game {
 
                     camera.coords.setX(10 * camera.size - camera.width / 2.0).setY(10 * camera.size - camera.height / 2.0);
 
-                    if (playerSnake.getCoords().getY() > 20) {
+                    /*if (playerSnake.getCoords().getY() > 20) {
                         playerSnake.setDirection(Direction.RIGHT);
                     }
                     if (playerSnake.getCoords().getX() > 20) {
@@ -180,7 +185,7 @@ public class Snakes extends PacketHandler implements Game {
                     }
                     if (playerSnake.getCoords().getX() < 0) {
                         playerSnake.setDirection(Direction.DOWN);
-                    }
+                    }*/
                 }
             }
 
@@ -275,7 +280,6 @@ public class Snakes extends PacketHandler implements Game {
             for (Entity entity : entities) {
                 if (entity.getEntityId() == packet.getEntityId()) {
                     SnakeEntity snake = (SnakeEntity) entity;
-                    snake.forceDirection(packet.getDirection());
                     snake.getTail().clear();
                     snake.getTail().addAll(packet.getTailAsList());
                     return;
@@ -324,8 +328,8 @@ public class Snakes extends PacketHandler implements Game {
     public void handle(LoginSuccess loginSuccess) throws Exception {
         playerId = loginSuccess.getPlayerId();
         System.out.println("logged in: player id = " + playerId);
-        gui.setNull();
         running = true; //start rendering the scene
+        gui.setRoot("overlay");
     }
 
     @Override

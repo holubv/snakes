@@ -246,6 +246,10 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
         nextDirection.add(direction);
     }
 
+    public void __instantGigaMegaChangeDirectionWithoutWaitingForAnything(Direction direction) {
+        this.direction = direction;
+    }
+
     public LinkedList<Direction> getNextDirection() {
         return nextDirection;
     }

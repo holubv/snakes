@@ -6,17 +6,15 @@ import com.gmail.holubvojtech.snakes.Coords;
 
 public class FoodEntity extends Entity {
 
-    private Type type;
+    private Type type = Type.GROW;
 
-    public FoodEntity(Coords coords, Type foodType) {
+    public FoodEntity(Coords coords) {
         super(EntityType.FOOD, coords);
-        this.type = foodType;
         boundingBox = new AxisAlignedBB(coords, 1, 1);
     }
 
-    public FoodEntity(int entityId, Coords coords, Type foodType) {
+    public FoodEntity(int entityId, Coords coords) {
         super(entityId, EntityType.FOOD, coords);
-        this.type = foodType;
         boundingBox = new AxisAlignedBB(coords, 1, 1);
     }
 
@@ -27,6 +25,11 @@ public class FoodEntity extends Entity {
 
     public Type getFoodType() {
         return type;
+    }
+
+    public FoodEntity setType(Type type) {
+        this.type = type;
+        return this;
     }
 
     public enum Type {
