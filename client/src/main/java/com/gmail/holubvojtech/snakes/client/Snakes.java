@@ -25,6 +25,7 @@ public class Snakes extends PacketHandler implements Game {
 
     public static Snakes inst;
     public static Font font;
+    public static Font chatFont;
 
     private GameContainer container;
     private Gui gui;
@@ -57,9 +58,14 @@ public class Snakes extends PacketHandler implements Game {
         container.setAlwaysRender(true);
 
         try {
+            java.awt.Font f = java.awt.Font.createFont(0, ResourceLoader.getResourceAsStream("kongtext.ttf"));
             font = new TrueTypeFont(
-                    java.awt.Font.createFont(0, ResourceLoader.getResourceAsStream("kongtext.ttf")).deriveFont(16f),
+                    f.deriveFont(16f),
                     false
+            );
+            chatFont = new TrueTypeFont(
+                    f.deriveFont(12f),
+                    true
             );
         } catch (Exception e) {
             throw new SlickException("cannot load font", e);
@@ -70,7 +76,7 @@ public class Snakes extends PacketHandler implements Game {
         this.nameField = mm.getNameField();
         gui.savePanel("main", mm);
         gui.savePanel("connect", new ConnectMenu(container));
-        gui.savePanel("overlay", overlay = new GameOverlay(container));
+        //todo gui.savePanel("overlay", overlay = new GameOverlay(container));
         gui.setRoot("main");
 
         renderer = new GameRenderer(new Camera(new Coords(), container.getWidth(), container.getHeight()));
@@ -124,9 +130,6 @@ public class Snakes extends PacketHandler implements Game {
                         playerSnake.enqueueDirection(Direction.DOWN);
                     }
                     lastDirectionChange = System.currentTimeMillis();
-                }
-                if (key == Input.KEY_T) {
-                    overlay.setChatVisible(!overlay.isChatVisible());
                 }
             }
         });

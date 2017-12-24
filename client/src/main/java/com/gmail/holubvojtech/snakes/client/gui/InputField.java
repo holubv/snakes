@@ -45,6 +45,9 @@ public class InputField extends Component {
     @Override
     public void render(Graphics g) {
 
+        Font oldFont = g.getFont();
+        g.setFont(font);
+
         if (background != null) {
             g.setColor(background);
             g.fillRect(x, y, width, height);
@@ -67,6 +70,8 @@ public class InputField extends Component {
                 g.drawString(hint, padX + x, padY + y);
             }
         }
+
+        g.setFont(oldFont);
     }
 
     @Override

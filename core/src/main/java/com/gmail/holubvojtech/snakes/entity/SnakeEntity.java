@@ -59,10 +59,10 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
         switch (lastDirection) {
             case UP:
-                changed = ly - 0.9 > coords.getBlockY();
+                changed = ly - 0.9 > coords.getY();
                 break;
             case LEFT:
-                changed = lx - 0.9 > coords.getBlockX();
+                changed = lx - 0.9 > coords.getX();
                 break;
             case DOWN:
                 changed = ly < coords.getBlockY();
