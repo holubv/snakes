@@ -149,6 +149,14 @@ public class Snakes extends PacketHandler implements Game {
                 entity.update(delta);
             }
 
+            for (Entity e1 : entities) {
+                for (Entity e2 : entities) {
+                    if (Entity.collides(e1, e2)) {
+                        System.out.println(e1.getType() + " with " + e2.getType());
+                    }
+                }
+            }
+
             if (playerSnake != null) {
 
                 if (oldDir != playerSnake.getDirection()) {

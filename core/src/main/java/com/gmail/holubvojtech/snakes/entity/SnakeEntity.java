@@ -1,23 +1,23 @@
 package com.gmail.holubvojtech.snakes.entity;
 
-import com.gmail.holubvojtech.snakes.AbstractRenderer;
-import com.gmail.holubvojtech.snakes.Color;
-import com.gmail.holubvojtech.snakes.Coords;
-import com.gmail.holubvojtech.snakes.Direction;
+import com.gmail.holubvojtech.snakes.*;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SnakeEntity extends Entity {
+public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
     private Direction direction = Direction.DOWN;
     private LinkedList<Direction> tail = new LinkedList<>();
     private Coords tailPivot;
     private Coords lastPivot;
 
+    private LinkedList<AxisAlignedBB> collisionBoxes = new LinkedList<>();
+
     private int playerId;
 
-    private double speed = 0.0055;
+    private double speed = 0.0015;
     private int lx;
     private int ly;
 
@@ -26,15 +26,16 @@ public class SnakeEntity extends Entity {
     private LinkedList<Direction> nextDirection = new LinkedList<>();
     private Direction lastDirection = direction;
 
-
     public SnakeEntity(Coords coords) {
         super(EntityType.SNAKE, coords);
         tailPivot = coords.blockCoords();
+        boundingBox = new AxisAlignedBB();
     }
 
     public SnakeEntity(int entityId, Coords coords) {
         super(entityId, EntityType.SNAKE, coords);
         tailPivot = coords.blockCoords();
+        boundingBox = new AxisAlignedBB();
     }
 
     @Override
@@ -100,6 +101,35 @@ public class SnakeEntity extends Entity {
             tail.addFirst(lastDirection.opposite());
         }
 
+
+        boundingBox.setCoords(coords.blockCoords()).setWidth(0).setHeight(0);
+        collisionBoxes.clear();
+
+        Coords c = tailPivot.blockCoords();
+
+        AxisAlignedBB aabb = new AxisAlignedBB(direction.set(c.copy()), 0, 0);
+        collisionBoxes.add(aabb);
+
+        boundingBox.include(aabb.getCoords());
+        aabb.include(c);
+
+        Direction last = null;
+        for (Direction d : tail) {
+            d.set(c);
+            boundingBox.include(c);
+
+            if (last == d || (last == null && d == direction.opposite())) {
+                aabb.grow(d, 1);
+            } else {
+                aabb.grow(1, 1);
+                aabb = new AxisAlignedBB(c, 0, 0);
+                collisionBoxes.add(aabb);
+            }
+            last = d;
+        }
+        aabb.grow(1, 1);
+        boundingBox.grow(1, 1);
+
         lastDirection = direction;
     }
 
@@ -158,6 +188,11 @@ public class SnakeEntity extends Entity {
 
     public List<Direction> getTail() {
         return tail;
+    }
+
+    @Override
+    public Collection<AxisAlignedBB> getBoundingBoxes() {
+        return collisionBoxes;
     }
 
     public int getPlayerId() {

@@ -77,6 +77,9 @@ public class SnakesServer {
 
         running = true;
 
+        entities.add(new FoodEntity(new Coords(1, 1), FoodEntity.Type.GROW));
+        entities.add(new FoodEntity(new Coords(1, 5), FoodEntity.Type.SHRINK));
+
         tickThread = new Thread(() -> {
             try {
 
@@ -192,9 +195,6 @@ public class SnakesServer {
 
     public void onPlayerConnected(ClientConnection connection) {
         schedule(() -> {
-
-            spawnEntity(new FoodEntity(new Coords(1, 1), FoodEntity.Type.GROW));
-            spawnEntity(new FoodEntity(new Coords(1, 5), FoodEntity.Type.SHRINK));
 
             for (Entity entity : entities) {
                 connection.unsafe().sendPacket(new EntitySpawn(entity));

@@ -1,6 +1,7 @@
 package com.gmail.holubvojtech.snakes.entity;
 
 import com.gmail.holubvojtech.snakes.AbstractRenderer;
+import com.gmail.holubvojtech.snakes.AxisAlignedBB;
 import com.gmail.holubvojtech.snakes.Coords;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +14,8 @@ public abstract class Entity {
     protected final EntityType type;
     protected Coords coords;
 
+    protected AxisAlignedBB boundingBox;
+
     protected boolean removed;
 
     public Entity(EntityType type, Coords coords) {
@@ -23,6 +26,37 @@ public abstract class Entity {
         this.entityId = entityId;
         this.type = type;
         this.coords = coords.copy();
+    }
+
+    public static boolean collides(Entity e1, Entity e2) {
+        if (e1.equals(e2)) {
+            return false;
+        }
+        AxisAlignedBB aabb1 = e1.getBoundingBox();
+        AxisAlignedBB aabb2 = e2.getBoundingBox();
+        if (aabb1 == null || aabb2 == null) {
+            return false;
+        }
+        if (!aabb1.intersects(aabb2)) {
+            return false;
+        }
+        if (e1 instanceof CompoundAABBEntity && e2 instanceof CompoundAABBEntity) {
+            for (AxisAlignedBB box1 : ((CompoundAABBEntity) e1).getBoundingBoxes()) {
+                for (AxisAlignedBB box2 : ((CompoundAABBEntity) e2).getBoundingBoxes()) {
+                    if (box1.intersects(box2)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        if (e1 instanceof CompoundAABBEntity) {
+            return CompoundAABBEntity.intersects((CompoundAABBEntity) e1, aabb2);
+        }
+        //noinspection SimplifiableIfStatement
+        if (e2 instanceof CompoundAABBEntity) {
+            return CompoundAABBEntity.intersects((CompoundAABBEntity) e2, aabb1);
+        }
+        return true;
     }
 
     public void teleport(Coords coords) {
@@ -56,6 +90,10 @@ public abstract class Entity {
 
     public Coords getCoords() {
         return coords.copy();
+    }
+
+    public AxisAlignedBB getBoundingBox() {
+        return boundingBox;
     }
 
     public void remove() {
