@@ -23,10 +23,17 @@ public class AxisAlignedBB {
     }
 
     public AxisAlignedBB grow(Direction direction, double amount) {
-        if (direction.isNegative()) {
-            add(direction.getRx() * amount, direction.getRy() * amount);
+        if (amount > 0) {
+            if (direction.isNegative()) {
+                add(direction.getRx() * amount, direction.getRy() * amount);
+            }
+            grow(Math.abs(direction.getRx() * amount), Math.abs(direction.getRy() * amount));
+        } else {
+            if (!direction.isNegative()) {
+                add(direction.getRx() * Math.abs(amount), direction.getRy() * Math.abs(amount));
+            }
+            grow(-Math.abs(direction.getRx() * amount), -Math.abs(direction.getRy() * amount));
         }
-        grow(Math.abs(direction.getRx() * amount), Math.abs(direction.getRy() * amount));
         return this;
     }
 

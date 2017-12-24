@@ -142,6 +142,8 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
     public void updateDirection(Direction newDirection, Coords at) {
 
+        //todo refactor snake movement and direction update
+
         double dx = coords.getX() - at.getX();
         double dy = coords.getY() - at.getY();
 
@@ -201,6 +203,14 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
 
             if (last == d || (last == null && d == direction.opposite())) {
                 aabb.grow(d, 1);
+
+                //shrink aabb by 1 for better collision avoiding
+                //(change direction just in front of food)
+                //todo better solution?
+                if (last == null) {
+                    aabb.grow(direction.opposite(), -1);
+                    boundingBox.grow(direction.opposite(), -1);
+                }
             } else {
                 aabb.grow(1, 1);
                 aabb = new AxisAlignedBB(c, 0, 0);

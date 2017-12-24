@@ -156,28 +156,6 @@ public class Snakes extends PacketHandler implements Game {
                 entity.update(delta);
             }
 
-            //this is very basic collision system
-            //problems can occur when server/game lags
-            //or when entity moves very fast
-            for (Entity e1 : entities) {
-                for (Entity e2 : entities) {
-                    if (!e1.isRemoved() && !e2.isRemoved() && Entity.collides(e1, e2)) {
-                        //System.out.println(e1.getType() + " with " + e2.getType());
-
-                        if (e1 instanceof SnakeEntity && e2.getType() == EntityType.FOOD) {
-                            /*e2.remove();
-                            SnakeEntity snake = (SnakeEntity) e1;
-                            FoodEntity food = (FoodEntity) e2;
-                            if (food.getFoodType() == FoodEntity.Type.GROW) {
-                                snake.grow();
-                            } else {
-                                snake.shrink();
-                            }*/
-                        }
-                    }
-                }
-            }
-
             if (playerSnake != null) {
 
                 if (oldDir != playerSnake.getDirection()) {
