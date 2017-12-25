@@ -1,6 +1,7 @@
 package com.gmail.holubvojtech.snakes.client;
 
 import com.gmail.holubvojtech.snakes.AbstractRenderer;
+import com.gmail.holubvojtech.snakes.AxisAlignedBB;
 import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.entity.Entity;
@@ -14,12 +15,16 @@ import java.util.List;
 
 public class GameRenderer extends AbstractRenderer {
 
+    private static final Color MAP_BOUNDS_COLOR = new Color(35, 39, 42);
+
+    private Snakes instance;
     private Camera camera;
 
     private float foodScaleAni = 1;
     private int foodScaleMod = 1;
 
-    public GameRenderer(Camera camera) throws SlickException {
+    public GameRenderer(Snakes snakes, Camera camera) throws SlickException {
+        this.instance = snakes;
         this.camera = camera;
     }
 
@@ -50,11 +55,32 @@ public class GameRenderer extends AbstractRenderer {
             }
         }
 
+        //render bounds
+        AxisAlignedBB bounds = instance.getMapBounds();
+        if (bounds != null) {
+
+            Coords start = camera.transform(bounds.getCoords());
+            Coords end = camera.transform(new Coords(bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight()));
+
+            float fx = (float) start.getX();
+            float fy = (float) start.getY();
+            float tx = (float) end.getX();
+            float ty = (float) end.getY();
+
+            //float width = (float) (end.getX() - start.getX());
+            //float height = (float) (end.getY() - start.getY());
+
+            g.setColor(MAP_BOUNDS_COLOR);
+            g.fillRect(0, 0, fx, camera.height);
+            g.fillRect(fx, 0, camera.width - fx, fy);
+            g.fillRect(fx, ty, camera.width - fx, camera.height - ty);
+            g.fillRect(tx, fy, camera.width - tx, ty - fy);
+        }
+
         //render entities
-        List<Entity> entities = Snakes.inst.getEntities();
+        List<Entity> entities = instance.getEntities();
         for (Entity entity : entities) {
             entity.render(this, g);
-
             /*g.setColor(Color.pink);
             AxisAlignedBB bounds = entity.getBoundingBox();
             if (bounds != null) {

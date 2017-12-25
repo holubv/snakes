@@ -70,6 +70,13 @@ public class AxisAlignedBB {
                 getY() <= coords.getY() && coords.getY() < (getY() + height);
     }
 
+    public boolean contains(AxisAlignedBB aabb) {
+        return (aabb.getX() >= getX() &&
+                aabb.getY() >= getY() &&
+                (aabb.getX() + aabb.getWidth()) <= getX() + width &&
+                (aabb.getY() + aabb.getHeight()) <= getY() + height);
+    }
+
     public boolean intersects(AxisAlignedBB aabb) {
         return (aabb.getX() + aabb.getWidth() > getX() &&
                 aabb.getY() + aabb.getHeight() > getY() &&
@@ -125,5 +132,14 @@ public class AxisAlignedBB {
     public AxisAlignedBB setHeight(double height) {
         this.height = height;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "AxisAlignedBB{" +
+                "coords=" + coords +
+                ", width=" + width +
+                ", height=" + height +
+                '}';
     }
 }

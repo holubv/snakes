@@ -43,7 +43,6 @@ Client bound (C <- S)
 | name | field type | description |
 |----|----|----|
 | Entity id | int | |
-| Direction | byte | |
 | Tail length | short | |
 | Tail relative position | byte[] | 4 tails are 1 byte (00-00-00-00) |
 
@@ -77,8 +76,8 @@ Relative coords (relative to the head or previous tail)
 |----|----|----|
 | Entity id | int | |
 | Entity type | byte | 0 = snake |
-| X | signed float | |
-| Y | signed float | |
+| X | float | |
+| Y | float | |
 | Entity metadata | ... | |
 
 
@@ -108,20 +107,30 @@ Relative coords (relative to the head or previous tail)
 | Player id | short | sender |
 | Message | String | |
 
-**[C 0x0A] Map**
+**[C 0x0A] Map Data**
 
 | name | field type | description |
 |----|----|----|
-| Player id | short | sender |
-| Message | String | |
+| Has bounds | boolean | |
+| X | signed short | set if 'has bounds' |
+| Y | signed short | set if 'has bounds' |
+| width | short | set if 'has bounds' |
+| height | short | set if 'has bounds' |
 
 **[C 0x0B] Update Direction**
 
 | name | field type | description |
 |----|----|----|
 | Direction | byte | |
-| Head X | signed float | |
-| Head Y | signed float | |
+| Head X | float | |
+| Head Y | float | |
+
+**[C 0x0C] Snake Tail Size Change**
+
+| name | field type | description |
+|----|----|----|
+| Entity id | int | |
+| Lambda | signed byte | currently works only +1 and -1 |
 
 
 Server bound (C -> S)
@@ -160,8 +169,8 @@ of snake entity with client's player id
 | name | field type | description |
 |----|----|----|
 | Direction | byte | |
-| Head X | signed float | |
-| Head Y | signed float | |
+| Head X | float | |
+| Head Y | float | |
 
 
 Connecting to the server
@@ -169,7 +178,7 @@ Connecting to the server
 1. C -> S **Handshake** with *Want login: true*
 2. C -> S **Login** with player name
 3. S -> C **Login success** with client's player id
-4. S -> C **Map**
+4. S -> C **Map Data**
 
 
 

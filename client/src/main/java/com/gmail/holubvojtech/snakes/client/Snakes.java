@@ -1,5 +1,6 @@
 package com.gmail.holubvojtech.snakes.client;
 
+import com.gmail.holubvojtech.snakes.AxisAlignedBB;
 import com.gmail.holubvojtech.snakes.Coords;
 import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.Utils;
@@ -44,6 +45,7 @@ public class Snakes extends PacketHandler implements Game {
 
     private int playerId;
     private SnakeEntity playerSnake;
+    private AxisAlignedBB mapBounds = null;
     private Map<Integer, String> players = new ConcurrentHashMap<>();
     private List<Entity> entities = new ArrayList<>();
 
@@ -79,7 +81,7 @@ public class Snakes extends PacketHandler implements Game {
         //todo gui.savePanel("overlay", overlay = new GameOverlay(container));
         gui.setRoot("main");
 
-        renderer = new GameRenderer(new Camera(new Coords(), container.getWidth(), container.getHeight()));
+        renderer = new GameRenderer(this, new Camera(new Coords(), container.getWidth(), container.getHeight()));
 
         container.getInput().addMouseListener(new InputAdapter() {
             @Override
@@ -328,11 +330,17 @@ public class Snakes extends PacketHandler implements Game {
     }
 
     @Override
+    public void handle(MapData packet) throws Exception {
+        mapBounds = packet.getMapBounds();
+    }
+
+    @Override
     public void handle(LoginSuccess loginSuccess) throws Exception {
         playerId = loginSuccess.getPlayerId();
         System.out.println("logged in: player id = " + playerId);
         running = true; //start rendering the scene
-        gui.setRoot("overlay");
+        //todo gui.setRoot("overlay");
+        gui.setNull();
     }
 
     @Override
@@ -384,5 +392,9 @@ public class Snakes extends PacketHandler implements Game {
 
     public SnakesClient getClient() {
         return client;
+    }
+
+    public AxisAlignedBB getMapBounds() {
+        return mapBounds;
     }
 }

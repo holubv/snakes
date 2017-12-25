@@ -1,9 +1,6 @@
 package com.gmail.holubvojtech.snakes.server;
 
-import com.gmail.holubvojtech.snakes.Color;
-import com.gmail.holubvojtech.snakes.Coords;
-import com.gmail.holubvojtech.snakes.Direction;
-import com.gmail.holubvojtech.snakes.Utils;
+import com.gmail.holubvojtech.snakes.*;
 import com.gmail.holubvojtech.snakes.entity.Entity;
 import com.gmail.holubvojtech.snakes.entity.EntityType;
 import com.gmail.holubvojtech.snakes.entity.FoodEntity;
@@ -71,6 +68,7 @@ public class SnakesServer {
     private double tps = TARGET_TPS;
     private Queue<Runnable> scheduled = new ConcurrentLinkedQueue<>();
 
+    private AxisAlignedBB mapBounds = new AxisAlignedBB(-50, -50, 100, 100);
     private List<Entity> entities = new ArrayList<>();
 
     public void start() throws InterruptedException {
@@ -169,6 +167,13 @@ public class SnakesServer {
         //problems can occur when server/game lags
         //or when entity moves very fast
         for (Entity e1 : entities) {
+
+            if (mapBounds != null && e1 instanceof SnakeEntity) {
+                if (!mapBounds.contains(e1.getBoundingBox())) {
+                    System.out.println("### out of map ###");
+                }
+            }
+
             for (Entity e2 : entities) {
                 if (!e1.isRemoved() && !e2.isRemoved() && Entity.collides(e1, e2)) {
                     if (e1 instanceof SnakeEntity && e2.getType() == EntityType.FOOD) {
@@ -192,8 +197,8 @@ public class SnakesServer {
             }
         }
 
-        if (currentTick % 100 == 0) {
-            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-50, 50), Utils.randomInt(-50, 50))));
+        if (currentTick % 500 == 0) {
+            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-15, 15), Utils.randomInt(-15, 15))));
         }
     }
 
@@ -228,6 +233,10 @@ public class SnakesServer {
 
     public void onPlayerConnected(ClientConnection connection) {
         schedule(() -> {
+
+            if (mapBounds != null) {
+                connection.unsafe().sendPacket(new MapData(mapBounds));
+            }
 
             for (Entity entity : entities) {
                 connection.unsafe().sendPacket(new EntitySpawn(entity));

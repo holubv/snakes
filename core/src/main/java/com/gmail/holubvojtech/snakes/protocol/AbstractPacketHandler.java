@@ -56,4 +56,7 @@ public class AbstractPacketHandler {
 
     public void handle(SnakeTailSizeChange packet) throws Exception {
     }
+
+    public void handle(MapData packet) throws Exception {
+    }
 }
