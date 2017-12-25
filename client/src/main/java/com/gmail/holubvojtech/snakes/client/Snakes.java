@@ -295,7 +295,6 @@ public class Snakes extends PacketHandler implements Game {
 
     @Override
     public void handle(EntitySpawn packet) throws Exception {
-        System.out.println("entity spawn");
         schedule(() -> {
             entities.add(packet.getEntity());
             if (packet.getEntityType() == EntityType.SNAKE) {

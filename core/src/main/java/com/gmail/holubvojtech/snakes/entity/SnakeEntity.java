@@ -20,7 +20,6 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
     private double speed = 0.0085;
     private int lx;
     private int ly;
-    private double lastOff = 0;
     private boolean afterForceUpdate = false;
 
     private Color color = new Color(0, 0, 0);
@@ -147,24 +146,18 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
         double dx = coords.getX() - at.getX();
         double dy = coords.getY() - at.getY();
 
-        if (Math.abs(Math.round(dx)) > 0 && Math.abs(Math.round(dy)) > 0) {
-            updateDirection(newDirection, new Coords(coords.getX(), at.getY()));
-            updateDirection(newDirection, new Coords(at.getX(), coords.getY()));
-            return;
-        }
-
-        double off = Math.max(Math.abs(dx), Math.abs(dy)) - (lastOff / 2);
+        double off = Math.max(Math.abs(dx), Math.abs(dy));
+        System.out.println("off: " + off);
         if (off <= 0) {
             return;
         }
         double delta = Math.abs(off) / speed;
-        lastOff = off;
 
-        coords.add(direction.getRx() * -off, direction.getRy() * -off);
+        coords.add(-dx, -dy);
 
         lastDirection = direction;
         direction = newDirection;
-        update0(delta, true);
+        update0(delta / 2, true);
 
         if (direction == Direction.UP || direction == Direction.DOWN) {
             coords.setX(Math.round(coords.getX()));

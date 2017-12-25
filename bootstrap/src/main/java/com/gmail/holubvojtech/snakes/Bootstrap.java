@@ -19,6 +19,7 @@ public class Bootstrap {
         }
 
         AppGameContainer container = new AppGameContainer(new Snakes());
+        container.setDisplayMode(720, 560, false);
         container.start();
     }
 

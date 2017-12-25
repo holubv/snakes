@@ -68,7 +68,7 @@ public class SnakesServer {
     private double tps = TARGET_TPS;
     private Queue<Runnable> scheduled = new ConcurrentLinkedQueue<>();
 
-    private AxisAlignedBB mapBounds = new AxisAlignedBB(-50, -50, 100, 100);
+    private AxisAlignedBB mapBounds/* = new AxisAlignedBB(-50, -50, 100, 100)*/;
     private List<Entity> entities = new ArrayList<>();
 
     public void start() throws InterruptedException {
@@ -197,8 +197,8 @@ public class SnakesServer {
             }
         }
 
-        if (currentTick % 500 == 0) {
-            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-15, 15), Utils.randomInt(-15, 15))));
+        if (currentTick % 100 == 0) {
+            spawnEntity(new FoodEntity(new Coords(Utils.randomInt(-40, 40), Utils.randomInt(-40, 40))));
         }
     }
 
