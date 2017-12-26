@@ -93,6 +93,14 @@ public class GameRenderer extends AbstractRenderer {
                 );
             }*/
         }
+
+        if (instance.getPlayerSnake() == null) {
+            g.setColor(Color.black);
+            String text = "Press ENTER to spawn...";
+            int w = Snakes.font.getWidth(text);
+            int h = Snakes.font.getHeight(text);
+            g.drawString(text, camera.width / 2 - w / 2, camera.height - h - 5);
+        }
     }
 
     @Override

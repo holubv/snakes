@@ -28,7 +28,7 @@ public class SnakesServer {
     private static final int TARGET_TPS = 60;
     private static final long NANOS_PER_TICK = 1000_000_000L / TARGET_TPS;
 
-    private static final Color[] SNAKE_COLORS = new Color[]{
+    public static final Color[] SNAKE_COLORS = new Color[]{
             new Color(0xF44336),
             new Color(0xE91E63),
             new Color(0x9C27B0),
@@ -157,6 +157,13 @@ public class SnakesServer {
             if (entity.isRemoved()) {
                 broadcast(new EntityRemove(entity.getEntityId()));
                 it.remove();
+
+                if (entity instanceof SnakeEntity) {
+                    ClientConnection conn = getClientBySnake(entity.getEntityId());
+                    if (conn != null) {
+                        conn.setSnakeId(0);
+                    }
+                }
                 continue;
             }
 
@@ -170,7 +177,9 @@ public class SnakesServer {
 
             if (mapBounds != null && e1 instanceof SnakeEntity) {
                 if (!mapBounds.contains(e1.getBoundingBox())) {
+                    e1.remove();
                     System.out.println("### out of map ###");
+                    continue;
                 }
             }
 
@@ -189,9 +198,76 @@ public class SnakesServer {
                         }
 
                         System.out.println("snake ate food");
+                        continue;
                     }
-                    if (e2 instanceof SnakeEntity && e1 instanceof SnakeEntity) {
-                        System.out.println("### COLLISION ###");
+                    if (e1 instanceof SnakeEntity && e2 instanceof SnakeEntity) {
+
+                        SnakeEntity s1 = (SnakeEntity) e1;
+                        SnakeEntity s2 = (SnakeEntity) e2;
+
+                        AxisAlignedBB head1 = s1.getBoundingBoxes().get(0); //"head" of snake
+                        AxisAlignedBB head2 = s2.getBoundingBoxes().get(0);
+                        if (e1.equals(e2)) {
+                            if (Entity.intersects(head1, s2, true) != null) {
+                                e1.remove();
+                                //snake hit his own body
+                            }
+                            continue;
+                        }
+                        AxisAlignedBB hit = Entity.intersects(head1, s2, false); //get box hit
+                        if (hit == null) {
+                            //head did not hit anything
+                            continue;
+                        }
+
+                        if (!hit.equals(head2)) {
+                            //body (not head) of snake s2 was hit by head of snake s1
+                            s1.remove();
+                            continue;
+                        }
+
+                        Direction dir1 = s1.getDirection();
+
+                        if (dir1 == s2.getDirection().opposite()) {
+                            s1.remove();
+                            s2.remove();
+                            //front impact
+                            continue;
+                        }
+
+                        if (dir1 == s2.getDirection()) {
+                            //rear impact
+
+                            double c1 = dir1.isHorizontal() ? s1.getX() : s1.getY();
+                            double c2 = dir1.isHorizontal() ? s2.getX() : s2.getY();
+                            double off = c2 - c1;
+                            if (dir1.isNegative()) {
+                                off *= -1;
+                            }
+                            if (off > 0) {
+                                s1.remove(); //s1 hit s2
+                            } else {
+                                s2.remove(); //s2 hit s1
+                            }
+                            continue;
+                        }
+
+                        Coords t1 = head1.getCoords();
+                        if (dir1.isVertical()) {
+                            t1.add(head1.getWidth() / 2, 0);
+                            if (!dir1.isNegative()) {
+                                t1.add(0, head1.getHeight());
+                            }
+                        } else {
+                            t1.add(0, head1.getHeight() / 2);
+                            if (!dir1.isNegative()) {
+                                t1.add(head1.getWidth(), 0);
+                            }
+                        }
+
+                        if (head2.contains(t1)) {
+                            s1.remove();
+                        }
                     }
                 }
             }
@@ -244,17 +320,6 @@ public class SnakesServer {
                     connection.unsafe().sendPacket(new SnakeTail((SnakeEntity) entity));
                 }
             }
-
-            SnakeEntity entity = new SnakeEntity(new Coords());
-            entity.setPlayerId(connection.getPlayerId());
-            entity.getTail().add(Direction.UP);
-            entity.getTail().add(Direction.UP);
-            entity.getTail().add(Direction.UP);
-            entity.getTail().add(Direction.UP);
-            entity.getTail().add(Direction.UP);
-            entity.setColor(Utils.randomValue(SNAKE_COLORS));
-            connection.setSnakeId(entity.getEntityId());
-            spawnEntity(entity);
         });
         broadcast(new PlayerJoin(connection.getPlayerId(), connection.getUsername()), connection);
     }

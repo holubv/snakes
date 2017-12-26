@@ -81,7 +81,9 @@ public class Snakes extends PacketHandler implements Game {
         //todo gui.savePanel("overlay", overlay = new GameOverlay(container));
         gui.setRoot("main");
 
-        renderer = new GameRenderer(this, new Camera(new Coords(), container.getWidth(), container.getHeight()));
+        Camera camera = new Camera(new Coords(), container.getWidth(), container.getHeight());
+        camera.coords.setX(-camera.width / 2.0).setY(-camera.height / 2.0);
+        renderer = new GameRenderer(this, camera);
 
         container.getInput().addMouseListener(new InputAdapter() {
             @Override
@@ -101,6 +103,12 @@ public class Snakes extends PacketHandler implements Game {
         container.getInput().addKeyListener(new InputAdapter() {
             @Override
             public void keyPressed(int key, char c) {
+                if (playerSnake == null) {
+                    if (running && key == Input.KEY_ENTER) {
+                        client.unsafe().sendPacket(new RespawnRequest());
+                    }
+                    return;
+                }
                 if (key == Input.KEY_LEFT) {
                     if (System.currentTimeMillis() - lastDirectionChange > 150) {
                         playerSnake.setDirection(Direction.LEFT);
@@ -143,6 +151,10 @@ public class Snakes extends PacketHandler implements Game {
 
             while (!scheduled.isEmpty()) {
                 scheduled.poll().run();
+            }
+
+            if (!running) {
+                return;
             }
 
             Direction oldDir = null;
@@ -319,6 +331,11 @@ public class Snakes extends PacketHandler implements Game {
     }
 
     @Override
+    public void handle(PlayerDeath packet) {
+        //todo
+    }
+
+    @Override
     public void handle(PlayerLeave packet) throws Exception {
         players.remove(packet.getPlayerId());
     }
@@ -373,7 +390,16 @@ public class Snakes extends PacketHandler implements Game {
         running = false;
         System.out.println("Disconnected");
         disconnect();
+        reset();
         gui.setRoot(new InfoPanel(container, "Disconnected", btn -> gui.setRoot("main")));
+    }
+
+    private void reset() {
+        client = null;
+        entities.clear();
+        playerId = 0;
+        mapBounds = null;
+        scheduled.clear();
     }
 
     @Override
@@ -395,5 +421,9 @@ public class Snakes extends PacketHandler implements Game {
 
     public AxisAlignedBB getMapBounds() {
         return mapBounds;
+    }
+
+    public SnakeEntity getPlayerSnake() {
+        return playerSnake;
     }
 }

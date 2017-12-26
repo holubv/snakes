@@ -45,6 +45,14 @@ public enum Direction {
         return rx < 0 || ry < 0;
     }
 
+    public boolean isHorizontal() {
+        return ry == 0;
+    }
+
+    public boolean isVertical() {
+        return rx == 0;
+    }
+
     public static Direction getDirection(Coords start, Coords end) {
         double dx = Math.abs(end.getX() - start.getX());
         double dy = Math.abs(end.getY() - start.getY());

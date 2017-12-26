@@ -1,5 +1,8 @@
 package com.gmail.holubvojtech.snakes.server;
 
+import com.gmail.holubvojtech.snakes.Color;
+import com.gmail.holubvojtech.snakes.Coords;
+import com.gmail.holubvojtech.snakes.Direction;
 import com.gmail.holubvojtech.snakes.Utils;
 import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
@@ -7,10 +10,7 @@ import com.gmail.holubvojtech.snakes.netty.Connection;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
 import com.gmail.holubvojtech.snakes.protocol.DefinedPacket;
 import com.gmail.holubvojtech.snakes.protocol.Protocol;
-import com.gmail.holubvojtech.snakes.protocol.packet.Handshake;
-import com.gmail.holubvojtech.snakes.protocol.packet.Login;
-import com.gmail.holubvojtech.snakes.protocol.packet.LoginSuccess;
-import com.gmail.holubvojtech.snakes.protocol.packet.UpdateDirection;
+import com.gmail.holubvojtech.snakes.protocol.packet.*;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +28,8 @@ public class ClientConnection extends PacketHandler implements Connection {
     private String version;
     private boolean handshake;
     private boolean playState;
+    private boolean wantRespawn;
+    private Color snakeColor = Utils.randomValue(SnakesServer.SNAKE_COLORS);
 
     private ChannelWrapper ch;
     private final Unsafe unsafe = new Unsafe() {
@@ -47,7 +49,28 @@ public class ClientConnection extends PacketHandler implements Connection {
     }
 
     @Override
+    public void handle(RespawnRequest packet) throws Exception {
+        if (!playState || wantRespawn || snakeId > 0) {
+            return;
+        }
+        wantRespawn = true;
+        this.server.schedule(() -> {
+            SnakeEntity entity = new SnakeEntity(new Coords());
+            entity.setPlayerId(playerId);
+            entity.getTail().add(Direction.UP);
+            entity.setColor(snakeColor);
+
+            setSnakeId(entity.getEntityId());
+            server.spawnEntity(entity);
+            wantRespawn = false;
+        });
+    }
+
+    @Override
     public void handle(UpdateDirection packet) throws Exception {
+        if (!playState) {
+            return;
+        }
         this.server.broadcast(packet, this);
         this.server.schedule(() -> {
             SnakeEntity entity = (SnakeEntity) server.getEntity(snakeId);

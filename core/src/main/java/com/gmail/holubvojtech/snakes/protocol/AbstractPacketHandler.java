@@ -59,4 +59,7 @@ public class AbstractPacketHandler {
 
     public void handle(MapData packet) throws Exception {
     }
+
+    public void handle(PlayerDeath packet) {
+    }
 }

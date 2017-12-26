@@ -2,7 +2,6 @@ package com.gmail.holubvojtech.snakes.entity;
 
 import com.gmail.holubvojtech.snakes.*;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -260,7 +259,7 @@ public class SnakeEntity extends Entity implements CompoundAABBEntity {
     }
 
     @Override
-    public Collection<AxisAlignedBB> getBoundingBoxes() {
+    public List<AxisAlignedBB> getBoundingBoxes() {
         return collisionBoxes;
     }
 

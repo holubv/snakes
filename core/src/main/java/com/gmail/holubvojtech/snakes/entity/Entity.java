@@ -29,9 +29,6 @@ public abstract class Entity {
     }
 
     public static boolean collides(Entity e1, Entity e2) {
-        if (e1.equals(e2)) {
-            return false;
-        }
         AxisAlignedBB aabb1 = e1.getBoundingBox();
         AxisAlignedBB aabb2 = e2.getBoundingBox();
         if (aabb1 == null || aabb2 == null) {
@@ -58,6 +55,20 @@ public abstract class Entity {
             return CompoundAABBEntity.intersects((CompoundAABBEntity) e2, aabb1);
         }
         return true;
+    }
+
+    public static AxisAlignedBB intersects(AxisAlignedBB aabb, CompoundAABBEntity entity, boolean ignoreFirst) {
+        int i = -1;
+        for (AxisAlignedBB box : entity.getBoundingBoxes()) {
+            i++;
+            if (i == 0 && ignoreFirst) {
+                continue;
+            }
+            if (aabb.intersects(box)) {
+                return box;
+            }
+        }
+        return null;
     }
 
     public void teleport(Coords coords) {

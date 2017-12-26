@@ -108,7 +108,7 @@ public class AxisAlignedBB {
     }
 
     public Coords getCoords() {
-        return coords;
+        return coords.copy();
     }
 
     public AxisAlignedBB setCoords(Coords coords) {
