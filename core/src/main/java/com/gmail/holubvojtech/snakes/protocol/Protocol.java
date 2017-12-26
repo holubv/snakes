@@ -25,7 +25,7 @@ public enum Protocol {
             registerPacket(0x03, PlayerJoin.class);
             registerPacket(0x04, PlayerLeave.class);
             registerPacket(0x05, SnakeTail.class);
-            //todo registerPacket(0x06, PlayerDeath.class);
+            registerPacket(0x06, PlayerDeath.class);
             registerPacket(0x07, EntitySpawn.class);
             registerPacket(0x08, EntityRemove.class);
             registerPacket(0x09, ChatMessage.class);
