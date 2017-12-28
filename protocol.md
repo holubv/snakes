@@ -13,17 +13,17 @@ Client bound (C <- S)
 | Max players | short | |
 | Description | String | |
 
-**[C 0x01] Disconnect**
-
-| name | field type | description |
-|----|----|----|
-| Reason | String | |
-
-**[C 0x02] Login success**
+**[C 0x01] Login success**
 
 | name | field type | description |
 |----|----|----|
 | Player id | short | |
+
+**[C 0x02] Disconnect**
+
+| name | field type | description |
+|----|----|----|
+| Reason | String | |
 
 **[C 0x03] Player join**
 
@@ -38,7 +38,51 @@ Client bound (C <- S)
 |----|----|----|
 | Player id | short | |
 
-**[C 0x05] Snake tail**
+**[C 0x05] Player death**
+
+| name | field type | description |
+|----|----|----|
+| Player id | short | |
+
+**[C 0x06] Entity spawn**
+
+| name | field type | description |
+|----|----|----|
+| Entity id | int | |
+| Entity type | byte | 0 = snake |
+| X | float | |
+| Y | float | |
+| Entity metadata | ... | |
+
+
+| Snake metadata | |
+|----|----|
+| Player id | short |
+| Speed | double |
+| Color R | byte |
+| Color G | byte |
+| Color B | byte |
+
+
+| Food metadata | |
+|----|----|
+| Type | byte |
+
+**[C 0x07] Entity remove**
+
+| name | field type | description |
+|----|----|----|
+| Entity id | int | |
+
+**[C 0x08] Update Direction**
+
+| name | field type | description |
+|----|----|----|
+| Direction | byte | |
+| Head X | float | |
+| Head Y | float | |
+
+**[C 0x09] Snake tail**
 
 | name | field type | description |
 |----|----|----|
@@ -64,50 +108,14 @@ Relative coords (relative to the head or previous tail)
 01 = [+1, 0] right
 ```
 
-**[C 0x06] Player death**
-
-| name | field type | description |
-|----|----|----|
-| Player id | short | |
-
-**[C 0x07] Entity spawn**
+**[C 0x0A] Snake Tail Size Change**
 
 | name | field type | description |
 |----|----|----|
 | Entity id | int | |
-| Entity type | byte | 0 = snake |
-| X | float | |
-| Y | float | |
-| Entity metadata | ... | |
+| Lambda | signed byte | currently works only +1 and -1 |
 
-
-| Snake metadata | |
-|----|----|
-| Player id | short |
-| Speed | double |
-| Color R | byte |
-| Color G | byte |
-| Color B | byte |
-
-
-| Food metadata | |
-|----|----|
-| Type | byte |
-
-**[C 0x08] Entity remove**
-
-| name | field type | description |
-|----|----|----|
-| Entity id | int | |
-
-**[C 0x09] ChatMessage**
-
-| name | field type | description |
-|----|----|----|
-| Player id | short | sender |
-| Message | String | |
-
-**[C 0x0A] Map Data**
+**[C 0x0B] Map Data**
 
 | name | field type | description |
 |----|----|----|
@@ -117,20 +125,12 @@ Relative coords (relative to the head or previous tail)
 | width | short | set if 'has bounds' |
 | height | short | set if 'has bounds' |
 
-**[C 0x0B] Update Direction**
+**[C 0x0C] ChatMessage**
 
 | name | field type | description |
 |----|----|----|
-| Direction | byte | |
-| Head X | float | |
-| Head Y | float | |
-
-**[C 0x0C] Snake Tail Size Change**
-
-| name | field type | description |
-|----|----|----|
-| Entity id | int | |
-| Lambda | signed byte | currently works only +1 and -1 |
+| Player id | short | sender |
+| Message | String | |
 
 
 Server bound (C -> S)
@@ -158,13 +158,7 @@ Server bound (C -> S)
 Respawn is successful if server send *Entity spawn*
 of snake entity with client's player id
 
-**[S 0x03] Chat**
-
-| name | field type | description |
-|----|----|----|
-| Message | String | |
-
-**[S 0x04] Update Direction**
+**[S 0x03] Update Direction**
 
 | name | field type | description |
 |----|----|----|
@@ -172,6 +166,11 @@ of snake entity with client's player id
 | Head X | float | |
 | Head Y | float | |
 
+**[S 0x04] Chat**
+
+| name | field type | description |
+|----|----|----|
+| Message | String | |
 
 Connecting to the server
 ------------------------------------
