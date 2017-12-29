@@ -13,7 +13,7 @@ public class MainMenu extends Panel {
 
         setBackground(Color.white);
 
-        addChild(new Label(10, 10, "Snakes v1", Snakes.font));
+        addChild(new Label(10, 10, "Snakes v" + Snakes.VERSION, Snakes.font));
         this.nameField = new InputField(width - 266, 10, 240, Snakes.font).setHint("Nickname").setText("MyNickname");
         addChild(this.nameField);
 

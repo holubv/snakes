@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Snakes extends PacketHandler implements Game {
 
-    public static final String VERSION = "0.1 indev";
+    public static final String VERSION = "0.1";
 
     public static Snakes inst;
     public static Font font;
