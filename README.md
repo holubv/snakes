@@ -5,6 +5,13 @@ Snakes
 
 [Download latest release](https://github.com/holubv/snakes/releases/latest)
 
+
+Controls
+------------------------
+- Arrow keys for snake movement
+- Mouse wheel scroll for camera zoom
+- Enter for respawn
+
 License
 ------------------------
 
