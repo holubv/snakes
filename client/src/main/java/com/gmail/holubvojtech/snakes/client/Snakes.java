@@ -11,6 +11,7 @@ import com.gmail.holubvojtech.snakes.entity.SnakeEntity;
 import com.gmail.holubvojtech.snakes.netty.ChannelWrapper;
 import com.gmail.holubvojtech.snakes.netty.PacketHandler;
 import com.gmail.holubvojtech.snakes.protocol.packet.*;
+import com.gmail.holubvojtech.snakes.server.SnakesServer;
 import org.newdawn.slick.*;
 import org.newdawn.slick.util.InputAdapter;
 import org.newdawn.slick.util.ResourceLoader;
@@ -37,6 +38,8 @@ public class Snakes extends PacketHandler implements Game {
 
     private boolean running;
     private GameRenderer renderer;
+
+    private SnakesServer localServer;
 
     private boolean connecting;
     private boolean connected;
@@ -77,6 +80,7 @@ public class Snakes extends PacketHandler implements Game {
         MainMenu mm = new MainMenu(container);
         this.nameField = mm.getNameField();
         gui.savePanel("main", mm);
+        gui.savePanel("createServer", new CreateServerMenu(container));
         gui.savePanel("connect", new ConnectMenu(container));
         //todo gui.savePanel("overlay", overlay = new GameOverlay(container));
         gui.setRoot("main");
@@ -231,15 +235,41 @@ public class Snakes extends PacketHandler implements Game {
         scheduled.offer(r);
     }
 
+    public void createServer(int port) {
+        if (connecting) {
+            return;
+        }
+        connecting = true;
+        if (client != null && connected) {
+            disconnect();
+        }
+        if (localServer != null) {
+            localServer.stop();
+        }
+        gui.setRoot(new InfoPanel(container, "Starting server..."));
+        localServer = new SnakesServer(port);
+
+        new Thread(() -> {
+            try {
+                localServer.start();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        connecting = false;
+        connect("localhost", port);
+    }
+
     public void connect(String ip, int port) {
         if (connecting) {
             return;
         }
+        connecting = true;
         if (client != null && connected) {
             disconnect();
         }
         gui.setRoot(new InfoPanel(container, "Connecting..."));
-        connecting = true;
         new Thread(() -> {
             try {
                 client = new SnakesClient(Snakes.this, new InetSocketAddress(ip, port));
@@ -258,6 +288,9 @@ public class Snakes extends PacketHandler implements Game {
     public void disconnect() {
         if (client != null) {
             client.stop();
+        }
+        if (localServer != null) {
+            localServer.stop();
         }
     }
 

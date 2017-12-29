@@ -14,7 +14,7 @@ public class MainMenu extends Panel {
         setBackground(Color.white);
 
         addChild(new Label(10, 10, "Snakes v1", Snakes.font));
-        this.nameField = new InputField(width - 266, 10, 240, Snakes.font).setHint("Nickname").setText("holubv");
+        this.nameField = new InputField(width - 266, 10, 240, Snakes.font).setHint("Nickname").setText("MyNickname");
         addChild(this.nameField);
 
         addChild(
@@ -23,9 +23,7 @@ public class MainMenu extends Panel {
                                 .setColor(Color.white))
                         .setBackground(Color.black)
                         .setHoverBackground(Color.darkGray)
-                        .onClick(btn -> {
-                            //Snakes.inst.getGui().setRoot("main");
-                        })
+                        .onClick(btn -> Snakes.inst.getGui().setRoot("createServer"))
         );
 
         addChild(

@@ -78,6 +78,7 @@ Client bound (C <- S)
 
 | name | field type | description |
 |----|----|----|
+| Entity id | int | |
 | Direction | byte | |
 | Head X | float | |
 | Head Y | float | |
@@ -162,6 +163,7 @@ of snake entity with client's player id
 
 | name | field type | description |
 |----|----|----|
+| Entity id | int | |
 | Direction | byte | |
 | Head X | float | |
 | Head Y | float | |
